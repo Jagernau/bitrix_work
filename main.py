@@ -5,9 +5,8 @@ import json
 clonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
 
 #save json file
-sensors = clonasssoft.get_glonasssoft_sensors()
-print(sensors)
-# with open('devices.json', 'w') as f:
-#     json.dump(devices, f, indent=3, ensure_ascii=False)
-#
+detail_vehicle = clonasssoft.get_glonasssoft_detail_vehicle("6d0dbffc-f503-49fa-b2ff-940bfa16b064")
+with open('detail_vehicle.json', 'w') as f:
+    json.dump(detail_vehicle, f, indent=3, ensure_ascii=False)
+
 

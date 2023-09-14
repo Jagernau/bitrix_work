@@ -47,9 +47,18 @@ class Glonasssoft:
             return result
         else:
             return None
+    def get_glonasssoft_detail_vehicle(self, id: str):
+        url = f"https://hosting.glonasssoft.ru/api/vehicles/{id}"
+        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+        response = requests.get(url, headers=headers,)
+        if response.status_code == 200:
+            result = response.json()
+            return result
+        else:
+            return None
 
     def get_glonasssoft_devices(self):
-        url = "https://hosting.glonasssoft.ru/api/v3/devices/types"
+        url = "https://hosting.glonasssoft.ru/api/devices/"
         headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
         if response.status_code == 200:
