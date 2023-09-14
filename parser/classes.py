@@ -18,9 +18,10 @@ class Glonasssoft:
         else:
             return None
 
-    def get_glonasssoft_agents(self):
+    @staticmethod
+    def get_glonasssoft_agents(token: str):
         url = f"https://hosting.glonasssoft.ru/api/agents/"
-        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+        headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
         if response.status_code == 200:
             result = response.json()
@@ -28,9 +29,10 @@ class Glonasssoft:
         else:
             return None
 
-    def get_glonasssoft_users(self):
+    @staticmethod
+    def get_glonasssoft_users(token: str):
         url = f"https://hosting.glonasssoft.ru/api/users/"
-        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+        headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
         if response.status_code == 200:
             result = response.json()
@@ -38,18 +40,10 @@ class Glonasssoft:
         else:
             return None
 
-    def get_glonasssoft_vehicles(self):
+    @staticmethod
+    def get_glonasssoft_vehicles(token: str):
         url = f"https://hosting.glonasssoft.ru/api/vehicles/"
-        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
-        response = requests.get(url, headers=headers,)
-        if response.status_code == 200:
-            result = response.json()
-            return result
-        else:
-            return None
-    def get_glonasssoft_detail_vehicle(self, id: str):
-        url = f"https://hosting.glonasssoft.ru/api/vehicles/{id}"
-        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+        headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
         if response.status_code == 200:
             result = response.json()
@@ -57,10 +51,23 @@ class Glonasssoft:
         else:
             return None
 
-    def get_glonasssoft_devices(self):
-        url = "https://hosting.glonasssoft.ru/api/devices/"
-        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+    @staticmethod
+    def get_glonasssoft_detail_vehicle(token: str, id: str):
+        url = f"https://hosting.glonasssoft.ru/api/vehicles/{id}"
+        headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
+        if response.status_code == 200:
+            result = response.json()
+            return result
+        else:
+            return None
+    
+    @staticmethod
+    def get_glonasssoft_devices(token: str):
+        payload = ""
+        url = "https://hosting.glonasssoft.ru/api/v3/devices/types"
+        headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+        response = requests.get(url, headers=headers, data=payload)
         if response.status_code == 200:
             result = response.json()
             return result
@@ -99,14 +106,15 @@ class Fort:
         else:
             return None
 
-    def get_fort_agents(self):
+    @staticmethod
+    def get_fort_agents(token: str):
         """get json from frt api"""
         url = f'https://suntel_fm/api/integration/v1/agents'
         params = {
-                'SessionId': str(self.token),
+                'SessionId': str(token),
                 'companyId': 0
         }
-        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": self.token}
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
         response = requests.get(url, params=params, headers=headers)
         if response.status_code == 200:
             return response.json()
