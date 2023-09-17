@@ -17,11 +17,13 @@ class Contragents(Base):
     ca_edo_connect = Column(Boolean)
     ca_field_of_activity = Column(String(255))
     ca_type = Column(String(255))
-    ca_contacts = relationship('ca_contacts', back_populates='contragent')
-    ca_objects = relationship('ca_objects', back_populates='contragent')
-    ca_contracts = relationship('ca_contracts', back_populates='contragent')
-    sim_cards = relationship('sim_cards', back_populates='contragent')
-    object_vehicles = relationship('object_vehicles', back_populates='contragent')
+
+    # ca_contacts = relationship('ca_contacts', back_populates='contragent')
+    # ca_objects = relationship('ca_objects', back_populates='contragent')
+    # ca_contracts = relationship('ca_contracts', back_populates='contragent')
+    # sim_cards = relationship('sim_cards', back_populates='contragent')
+    # object_vehicles = relationship('object_vehicles', back_populates='contragent')
+    # holding = relationship('holdings', back_populates='contragent')
 
 class ca_contacts(Base):
     __tablename__ = 'ca_contacts'
@@ -34,12 +36,15 @@ class ca_contacts(Base):
     ca_contact_work_num = Column(String(255))
     ca_contact_email = Column(String(255))
     ca_contact_position = Column(String(255))
-    contragent = relationship('Contragents', back_populates='ca_contacts')
 
+    # contragent = relationship('Contragents', back_populates='ca_contacts')
+    #
 class ca_objects(Base):
     __tablename__ = 'ca_objects'
     ca_object_id = Column(Integer, primary_key=True, autoincrement=True)
     ca_id = Column(Integer, ForeignKey('Contragents.ca_id'))
+    owner = Column(String(255))
+    imei = Column(String(255))
     ca_object_sm_id = Column(Integer, ForeignKey('monitoring_system.mon_sys_id'))
     ca_object_sm_object_id = Column(String(255))
     ca_object_name = Column(String(255))
@@ -47,10 +52,13 @@ class ca_objects(Base):
     ca_object_add_date = Column(DateTime)
     ca_object_last_message = Column(DateTime)
     ca_object_margin = Column(Integer)
-    contragent = relationship('Contragents', back_populates='ca_objects')
-    object_sensors = relationship('object_sensors', back_populates='ca_object')
-    object_custom_fields = relationship('object_custom_fields', back_populates='ca_object')
-    object_retranslators = relationship('object_retranslators', back_populates='ca_object')
+    updated = Column(DateTime)
+
+    # contragent = relationship('Contragents', back_populates='ca_objects')
+    # object_sensors = relationship('object_sensors', back_populates='ca_object')
+    # object_custom_fields = relationship('object_custom_fields', back_populates='ca_object')
+    # object_retranslators = relationship('object_retranslators', back_populates='ca_object')
+    # object_status = relationship('object_statuses', back_populates='ca_object')
 
 class object_sensors(Base):
     __tablename__ = 'object_sensors'
@@ -64,8 +72,9 @@ class object_sensors(Base):
     sensor_mac_address = Column(String(255))
     sensor_technology = Column(String(255))
     sensor_connect_type = Column(String(255))
-    ca_object = relationship('ca_objects', back_populates='object_sensors')
 
+    # ca_object = relationship('ca_objects', back_populates='object_sensors')
+    #
 class ca_contracts(Base):
     __tablename__ = 'ca_contracts'
     contract_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -77,20 +86,23 @@ class ca_contracts(Base):
     contract_payment_period = Column(String(255))
     contract_start_date = Column(DateTime)
     contract_expired_date = Column(DateTime)
-    contragent = relationship('Contragents', back_populates='ca_contracts')
 
+    # contragent = relationship('Contragents', back_populates='ca_contracts')
+    #
 class holdings(Base):
     __tablename__ = 'holdings'
     holding_id = Column(Integer, primary_key=True, autoincrement=True)
     holding_name = Column(String(255))
-    Contragents = relationship('Contragents', back_populates='ca_holding_id')
 
+    # contragent = relationship('Contragents', back_populates='holding')
+    #
 class object_statuses(Base):
     __tablename__ = 'object_statuses'
     status_id = Column(Integer, primary_key=True, autoincrement=True)
     status = Column(String(255))
-    ca_objects = relationship('ca_objects', back_populates='ca_object_status')
 
+    # ca_object = relationship('ca_objects', back_populates='ca_object_status')
+    #
 class sim_cards(Base):
     __tablename__ = 'sim_cards'
     sim_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -102,15 +114,17 @@ class sim_cards(Base):
     sim_iccid = Column(String(255))
     sim_ca_price = Column(Integer)
     sim_suntel_price = Column(Integer)
-    contragent = relationship('Contragents', back_populates='sim_cards')
 
+    # contragent = relationship('Contragents', back_populates='sim_cards')
+    #
 class object_custom_fields(Base):
     __tablename__ = 'object_custom_fields'
     custom_field_id = Column(Integer, primary_key=True, autoincrement=True)
     custom_field_object_id = Column(Integer, ForeignKey('ca_objects.ca_object_id'))
     custom_text = Column(String(255))
-    ca_object = relationship('ca_objects', back_populates='object_custom_fields')
 
+    # ca_object = relationship('ca_objects', back_populates='object_custom_fields')
+    #
 class object_retranslators(Base):
     __tablename__ = 'object_retranslators'
     retranslator_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -118,17 +132,19 @@ class object_retranslators(Base):
     retranslator_suntel_price = Column(Integer)
     retranslator_ca_price = Column(Integer)
     retr_object_id = Column(Integer, ForeignKey('ca_objects.ca_object_id'))
-    ca_object = relationship('ca_objects', back_populates='object_retranslators')
 
+    # ca_object = relationship('ca_objects', back_populates='object_retranslators')
+    #
 class monitoring_system(Base):
     __tablename__ = 'monitoring_system'
     mon_sys_id = Column(Integer, primary_key=True, autoincrement=True)
-    pu_sm_id = Column(Integer)
+    pu_sm_id = Column(Integer, unique=True)
     mon_sys_name = Column(String(255))
     mon_sys_obj_price_suntel = Column(Integer)
     mon_sys_ca_obj_price_default = Column(Integer)
-    ca_objects = relationship('ca_objects', back_populates='ca_object_sm_id')
 
+    # ca_objects = relationship('ca_objects', back_populates='ca_object_sm_id')
+    #
 class devices(Base):
     __tablename__ = 'devices'
     device_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -140,8 +156,9 @@ class devices(Base):
     device_vendor_id = Column(String(255))
     device_imei = Column(String(255))
     device_serial = Column(String(255))
-    contragent = relationship('Contragents', back_populates='devices')
 
+    # contragent = relationship('Contragents', back_populates='devices')
+    #
 class object_vehicles(Base):
     __tablename__ = 'object_vehicles'
     vehicle_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -154,7 +171,7 @@ class object_vehicles(Base):
     vehicle_gos_nomer_region = Column(String(255))
     vehicle_type = Column(String(255))
     vehicle_vin = Column(String(255))
-    contragent = relationship('Contragents', back_populates='object_vehicles')
 
-
+    # contragent = relationship('Contragents', back_populates='object_vehicles')
+    #
 

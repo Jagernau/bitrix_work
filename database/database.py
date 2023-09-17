@@ -3,7 +3,7 @@ from typing import Final
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from config.config import DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT 
+from configurations.config import DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT 
 
 from utils.singleton import SingletonMeta
 

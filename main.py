@@ -1,18 +1,14 @@
-from parser.classes import Glonasssoft
+from parser.classes import Fort
 from configurations import config
+from database.cruds import glonass_crud
 import json
 import time
 
-clonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
 
-token = str(clonasssoft.token)
-#5 секунд ожидать
-
-time.sleep(5)
-
-#save json file
-vehicles = clonasssoft.get_glonasssoft_vehicles(token=token)
-with open('vehicles.json', 'w') as f:
-    json.dump(vehicles, f, indent=3, ensure_ascii=False)
-
+fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
+token = str(fort.token)
+time.sleep(2)
+objects_groups: dict = fort.get_fort_objectgroup(token=token)
+with open('fort_objects_groups.json', 'w') as f:
+    json.dump(objects_groups, f, indent=3, ensure_ascii=False)
 

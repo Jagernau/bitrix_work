@@ -92,7 +92,7 @@ class Fort:
     
     @property
     def token(self) -> str | None:
-        url = f'https://suntel_fm/api/integration/v1/connect'
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/connect'
         params = {
                 'login': self.login,
                 'password': self.password,
@@ -107,9 +107,9 @@ class Fort:
             return None
 
     @staticmethod
-    def get_fort_agents(token: str):
+    def get_fort_companies(token: str):
         """get json from frt api"""
-        url = f'https://suntel_fm/api/integration/v1/agents'
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/getcompanieslist'
         params = {
                 'SessionId': str(token),
                 'companyId': 0
@@ -119,4 +119,50 @@ class Fort:
         if response.status_code == 200:
             return response.json()
         else:
-            return None           
+            return None
+
+    @staticmethod
+    def get_fort_users(token: str):
+        """get json from frt api"""
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/users'
+        params = {
+                'SessionId': str(token),
+                'companyId': 0
+        }
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
+        response = requests.get(url, params=params, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+
+
+    @staticmethod
+    def get_fort_objects(token: str):
+        """get json from frt api"""
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/getobjectslist'
+        params = {
+                'SessionId': str(token),
+                'companyId': 0
+        }
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
+        response = requests.get(url, params=params, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+
+    @staticmethod
+    def get_fort_objectgroup(token: str):
+        """get json from frt api"""
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/getobjectgroupslist'
+        params = {
+                'SessionId': str(token),
+                'companyId': 0
+        }
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
+        response = requests.get(url, params=params, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
