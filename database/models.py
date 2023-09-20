@@ -49,10 +49,13 @@ class ca_objects(Base):
     ca_object_sm_object_id = Column(String(255))
     ca_object_name = Column(String(255))
     ca_object_status = Column(String(255), ForeignKey('object_statuses.status_id'))
+    created_date = Column(DateTime)
     ca_object_add_date = Column(DateTime)
     ca_object_last_message = Column(DateTime)
     ca_object_margin = Column(Integer)
     updated = Column(DateTime)
+    linked_login = Column(String(255))
+    linked_client = Column(String(255))
 
     # contragent = relationship('Contragents', back_populates='ca_objects')
     # object_sensors = relationship('object_sensors', back_populates='ca_object')
