@@ -1,25 +1,26 @@
 from parser.classes import Fort, Glonasssoft
 from configurations import config
-from database.cruds import glonass_crud
+from database.crud import add_objects
 import json
 import time
 from datetime import datetime
-from utils.calculate import get_status
+from utils.calculate import get_status, get_user
 
 
 def add_glonasssoft_data():
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
     token = str(glonasssoft.token)
-    time.sleep(1)
+    time.sleep(3)
     vehicles = glonasssoft.get_glonasssoft_vehicles(token=token)
-    time.sleep(1)
+    time.sleep(3)
     agents = glonasssoft.get_glonasssoft_agents(token=token)
-    time.sleep(1)
+    time.sleep(3)
     users = glonasssoft.get_glonasssoft_users(token=token)
+    time.sleep(3)
     result = []
     for i in vehicles:
         marge = {}
-        marge["id"] = i["id"]
+        marge["id_in_system"] = i["id"]
         marge["name"] = i["number"]
         marge["imei"] = i["imei"]
         marge["owner_agent"] = [agent["name"] for agent in agents if i["owner"] in agent["id"]][0]
@@ -27,19 +28,12 @@ def add_glonasssoft_data():
         marge["updated"] = datetime.strptime(str(i["updated"].split(".")[0]), "%Y-%m-%dT%H:%M:%S")
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(1)
-        marge["object_sys_id"] = get_status(i["number"])
-        for x in users:
-            if i["owner"] in x["agentGuid"]:
-                marge["owner_user"] = x["name"]
-
+        marge["object_status_id"] = get_status(i["number"])
+        marge["user"] = get_user(i["owner"], users)
         result.append(marge)
-    return result
-with open('merge_glonas.txt', 'w') as f:
-    f.write(str(add_glonasssoft_data()))
-    
+    add_objects(result)
 
-
-
+add_glonasssoft_data()
 
 # fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
 # token = str(fort.token)

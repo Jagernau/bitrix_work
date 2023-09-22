@@ -11,3 +11,8 @@ def get_status(status: str):
         return int(6)
     else:
         return int(3)
+
+def get_user(vehicle_owner_id: str, users: list):
+    for user in users:
+        if user["agentGuid"] == vehicle_owner_id:
+            return user["name"]

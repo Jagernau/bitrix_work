@@ -36,7 +36,8 @@ class ObjectStatus(Base):
     __tablename__ = 'object_statuses'
 
     status_id = Column(Integer, primary_key=True)
-    status = Column(String(255, 'utf8mb3_unicode_ci'))
+    status = Column(VARCHAR(50))
+    abon_bool = Column(TINYINT(1), nullable=False, comment='На абонентке или нет')
 
 
 class Contragent(Base):
@@ -86,6 +87,7 @@ class CaObject(Base):
     owner_user = Column(String(25, 'utf8mb3_unicode_ci'), comment='Хозяин юзер')
     imei = Column(VARCHAR(30), comment='идентификатор терминала')
     updated = Column(DateTime, comment='Когда изменён')
+    object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')
 
     object_status1 = relationship('ObjectStatus')
     sys_mon = relationship('MonitoringSystem')
@@ -112,11 +114,11 @@ class CaContract(Base):
 
     contract_id = Column(Integer, primary_key=True)
     ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
-    contract_type = Column(VARCHAR(255), comment='Тип договора')
-    contract_num_prefix = Column(VARCHAR(255), comment='Префикс номера договора')
-    contract_num = Column(VARCHAR(255), comment='Номер договора')
-    contract_payment_term = Column(VARCHAR(255), comment='условия оплаты')
-    contract_payment_period = Column(VARCHAR(255), comment='Период оплаты')
+    contract_type = Column(VARCHAR(50), comment='Тип договора')
+    contract_num_prefix = Column(VARCHAR(50), comment='Префикс номера договора')
+    contract_num = Column(VARCHAR(50), comment='Номер договора')
+    contract_payment_term = Column(VARCHAR(50), comment='условия оплаты')
+    contract_payment_period = Column(VARCHAR(50), comment='Период оплаты')
     contract_start_date = Column(Date, comment='Дата заключения договора')
     contract_expired_date = Column(Date, comment='Дата завершения договора')
 
