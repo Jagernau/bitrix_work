@@ -84,7 +84,7 @@ class CaObject(Base):
     object_last_message = Column(DateTime, comment='Дата последнего сообщения')
     object_margin = Column(Integer, comment='Надбавка к базовой цене объекта')
     owner_contragent = Column(VARCHAR(70), comment='Хозяин контрагент')
-    owner_user = Column(String(25, 'utf8mb3_unicode_ci'), comment='Хозяин юзер')
+    owner_user = Column(String(255, 'utf8mb3_unicode_ci'), comment='Хозяин юзер')
     imei = Column(VARCHAR(30), comment='идентификатор терминала')
     updated = Column(DateTime, comment='Когда изменён')
     object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')

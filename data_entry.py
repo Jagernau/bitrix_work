@@ -4,7 +4,7 @@ from database.crud import add_objects
 import json
 import time
 from datetime import datetime
-from utils.calculate import get_status, get_user
+from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company
 
 
 def add_glonasssoft_data():
@@ -29,7 +29,7 @@ def add_glonasssoft_data():
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(1)
         marge["object_status_id"] = get_status(i["number"])
-        marge["user"] = get_user(i["owner"], users)
+        marge["user"] = get_glonas_user(i["owner"], users)
         result.append(marge)
     add_objects(result)
 
@@ -39,35 +39,28 @@ def add_fort_data():
     fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
     token = str(fort.token)
     time.sleep(3)
-    groups = fort.get_fort_objectgroup(token=token)["groups"]
+    groups_companies = fort.get_fort_objectgroup(token=token)["groups"]
     time.sleep(3)
     companies = fort.get_fort_companies(token=token)["companies"]
     time.sleep(3)
     users = fort.get_fort_users(token=token)["users"]
     time.sleep(3)
     objects = fort.get_fort_objects(token=token)["objects"]
+    time.sleep(3)
+    groups_users = fort.get_fort_group_users(token=token)["userGroups"]
     result = []
     for i in objects:
         marge = {}
         marge["id_in_system"] = str(i["id"])
         marge["name"] = i["name"]
         marge["imei"] = i["IMEI"]
-        marge["owner_agent"] = [group["name"] for group in groups if i["groupId"] == group["id"]][0]
-        #marge["created"] = datetime.strptime(str(i["created"].split(".")[0]), "%Y-%m-%dT%H:%M:%S")
-        #marge["updated"] = datetime.strptime(str(i["updated"].split(".")[0]), "%Y-%m-%dT%H:%M:%S")
-        #marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
+        marge["owner_agent"] = get_fort_company(i["groupId"], companies, groups_companies)
+        marge["created"] = None
+        marge["updated"] = None
+        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(2)
         marge["object_status_id"] = get_status(i["name"])
-        #marge["user"] = get_user(i["owner"], users)        
+        marge["user"] = str(get_fort_user(marge["owner_agent"], users, companies))      
         result.append(marge)
-    return result
-    #add_objects(result)
+    add_objects(result)
 
-with open("fort_merge.json", "w") as f:
-    json.dump(add_fort_data(), f, indent=3, ensure_ascii=False)
-
-# fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
-# token = str(fort.token)
-# groups = fort.get_fort_objectgroup(token=token)
-# with open("fort_groups.json", "w") as f:
-#     json.dump(groups, f, indent=3, ensure_ascii=False)

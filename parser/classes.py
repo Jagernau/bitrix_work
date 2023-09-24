@@ -166,3 +166,18 @@ class Fort:
             return response.json()
         else:
             return None
+
+    @staticmethod
+    def get_fort_group_users(token: str):
+        """get json from frt api"""
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/usergroups'
+        params = {
+                'SessionId': str(token),
+                'companyId': 0
+        }
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
+        response = requests.get(url, params=params, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None

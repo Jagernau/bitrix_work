@@ -12,7 +12,35 @@ def get_status(status: str):
     else:
         return int(3)
 
-def get_user(vehicle_owner_id: str, users: list):
+def get_glonas_user(vehicle_owner_id: str, users: list):
     for user in users:
         if user["agentGuid"] == vehicle_owner_id:
             return user["name"]
+
+
+
+def get_fort_user(company_name: str, users: list, companies):
+    user_list = []
+    for company in companies:
+        if company["name"] == company_name:
+            for user in users:
+                if user["companyId"] == company["id"]:
+                    user_list.append(user["name"])
+    return user_list
+
+
+def get_fort_company(obj_group_id:int, companies: list, grops_companies):
+    for group_company in grops_companies:
+        if group_company["id"] == obj_group_id and group_company["companyId"] != 0:
+            for company in companies:
+                if company["id"] == group_company["companyId"]:
+                    return company["name"]
+
+        if group_company["id"] == obj_group_id and group_company["companyId"] == 0:
+            parent = group_company["parentGroupId"]
+            for group_company in grops_companies:
+                if group_company["id"] == parent:
+                    for company in companies:
+                        if company["id"] == group_company["companyId"]:
+                            return company["name"]
+    
