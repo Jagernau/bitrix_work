@@ -1,4 +1,4 @@
-from parser.classes import Fort, Glonasssoft
+from parser.classes import Fort, Glonasssoft, get_wialin_host_units_users 
 from configurations import config
 from database.crud import add_objects
 import json
@@ -64,3 +64,16 @@ def add_fort_data():
         result.append(marge)
     add_objects(result)
 
+
+def add_wialon_host_data():
+    wialon_data = get_wialin_host_units_users(str(config.WIALON_HOST_TOKEN))
+    units = wialon_data[0]
+    users = wialon_data[1]
+
+    with open('wialon_units_2.json', 'w') as f:
+        json.dump(units, f, indent=3, ensure_ascii=False)
+
+    with open('wialon_users.json', 'w') as f:
+        json.dump(users, f, indent=3, ensure_ascii=False)
+
+add_wialon_host_data()
