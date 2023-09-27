@@ -44,3 +44,40 @@ def get_fort_company(obj_group_id:int, companies: list, grops_companies):
                         if company["id"] == group_company["companyId"]:
                             return company["name"]
     
+
+def get_wialon_imei(field: dict):
+    if len(field) == 0:
+        return None
+    else:
+        result = ""
+        for key in field:
+            if field[key]["n"] == "IMEI" or field[key]["n"] == "imei":
+                result = field[key]["v"]
+                break
+            else:
+                result = None
+        return result
+
+def get_wialon_agent(field: dict):
+    if len(field) == 0:
+        return None
+    else:
+        result = ""
+        for key in field:
+            if field[key]["n"] == "Подразделение":
+                result = field[key]["v"]
+                break
+            elif field[key]["n"] == "клиент" or field[key]["n"] == "Клиент":
+                result = field[key]["v"]
+                break
+            else:
+                result = None
+        return result
+
+
+def get_wialon_user(vehicle_owner_id: str, users: list):
+    for user in users:
+        if user["id"] == vehicle_owner_id:
+            return user["nm"]
+
+

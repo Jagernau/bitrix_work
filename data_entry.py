@@ -4,8 +4,9 @@ from database.crud import add_objects
 import json
 import time
 from datetime import datetime
-from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company
+from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company, get_wialon_imei, get_wialon_agent, get_wialon_user
 
+import emoji
 
 def add_glonasssoft_data():
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
@@ -67,13 +68,31 @@ def add_fort_data():
 
 def add_wialon_host_data():
     wialon_data = get_wialin_host_units_users(str(config.WIALON_HOST_TOKEN))
-    units = wialon_data[0]
-    users = wialon_data[1]
-
-    with open('wialon_units_2.json', 'w') as f:
-        json.dump(units, f, indent=3, ensure_ascii=False)
-
-    with open('wialon_users.json', 'w') as f:
-        json.dump(users, f, indent=3, ensure_ascii=False)
+    units = wialon_data[0]["items"]
+    users = wialon_data[1]["items"]
+    result = []
+    for i in units:
+        marge = {}
+        marge["id_in_system"] = str(i["id"])
+        marge["name"] = emoji.demojize(i["nm"])
+        if get_wialon_imei(i["flds"]) != None:
+            marge["imei"] = get_wialon_imei(i["flds"])
+        else:
+            marge["imei"] = None
+        if get_wialon_agent(i["flds"]) != None:
+            marge["owner_agent"] = get_wialon_agent(i["flds"])
+        else:
+            marge["owner_agent"] = None
+        marge["created"] = None
+        marge["updated"] = None
+        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
+        marge["monitor_sys_id"] = int(3)
+        if i["act"] == 0:
+            marge["object_status_id"] = int(7)
+        else:
+            marge["object_status_id"] = get_status(i["nm"])
+        marge["user"] = get_wialon_user(i["crt"], users)
+        result.append(marge)
+    add_objects(result)
 
 add_wialon_host_data()
