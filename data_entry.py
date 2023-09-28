@@ -1,4 +1,4 @@
-from parser.classes import Fort, Glonasssoft, get_wialin_host_units_users 
+from parser.classes import Fort, Glonasssoft, get_wialin_host_units_users, get_wialin_local_units_users
 from configurations import config
 from database.crud import add_objects
 import json
@@ -7,8 +7,24 @@ from datetime import datetime
 from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company, get_wialon_imei, get_wialon_agent, get_wialon_user
 
 import emoji
+"""
+    API on vehicles, agents, and users.
 
-def add_glonasssoft_data():
+    Returns:
+    A list of dictionaries containing information on each vehicle. Each dictionary contains the following keys:
+    - `id_in_system`: The ID of the vehicle in the Glonasssoft system.
+    - `name`: The name of the vehicle.
+    - `imei`: The IMEI number of the vehicle.
+    - `owner_agent`: The name of the agent that owns the vehicle.
+    - `created`: The date and time the vehicle was created.
+    - `updated`: The date and time the vehicle was last updated.
+    - `add_date`: The date and time the vehicle was added to the system.
+    - `monitor_sys_id`: The ID of the monitoring system.
+    - `object_status_id`: The status of the vehicle.
+    - `user`: The user associated with the vehicle.
+"""
+
+def merge_glonasssoft_data():
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
     token = str(glonasssoft.token)
     time.sleep(3)
@@ -32,11 +48,11 @@ def add_glonasssoft_data():
         marge["object_status_id"] = get_status(i["number"])
         marge["user"] = get_glonas_user(i["owner"], users)
         result.append(marge)
-    add_objects(result)
+    return result
 
 
 
-def add_fort_data():
+def merge_fort_data():
     fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
     token = str(fort.token)
     time.sleep(3)
@@ -63,10 +79,10 @@ def add_fort_data():
         marge["object_status_id"] = get_status(i["name"])
         marge["user"] = str(get_fort_user(marge["owner_agent"], users, companies))      
         result.append(marge)
-    add_objects(result)
+    return result
 
 
-def add_wialon_host_data():
+def merge_wialon_host_data():
     wialon_data = get_wialin_host_units_users(str(config.WIALON_HOST_TOKEN))
     units = wialon_data[0]["items"]
     users = wialon_data[1]["items"]
@@ -93,6 +109,35 @@ def add_wialon_host_data():
             marge["object_status_id"] = get_status(i["nm"])
         marge["user"] = get_wialon_user(i["crt"], users)
         result.append(marge)
-    add_objects(result)
+    return result
 
-add_wialon_host_data()
+
+def merge_wialon_local_data():
+    wialon_data = get_wialin_local_units_users(str(config.WIALON_LOCAL_TOKEN))
+    units = wialon_data[0]["items"]
+    users = wialon_data[1]["items"]
+    result = []
+    for i in units:
+        marge = {}
+        marge["id_in_system"] = str(i["id"])
+        marge["name"] = emoji.demojize(i["nm"])
+        if get_wialon_imei(i["flds"]) != None:
+            marge["imei"] = get_wialon_imei(i["flds"])
+        else:
+            marge["imei"] = None
+        if get_wialon_agent(i["flds"]) != None:
+            marge["owner_agent"] = get_wialon_agent(i["flds"])
+        else:
+            marge["owner_agent"] = None
+        marge["created"] = None
+        marge["updated"] = None
+        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
+        marge["monitor_sys_id"] = int(4)
+        if i["act"] == 0:
+            marge["object_status_id"] = int(7)
+        else:
+            marge["object_status_id"] = get_status(i["nm"])
+        marge["user"] = get_wialon_user(i["crt"], users)
+        result.append(marge)
+    return result
+

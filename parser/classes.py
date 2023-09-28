@@ -227,3 +227,50 @@ def get_wialin_host_units_users(token: str):
     users = sdk.core_search_items(parameters_user)
     sdk.logout()
     return [units, users]
+
+
+def get_wialin_local_units_users(token: str):
+    sdk = WialonSdk(
+      is_development=True,
+      scheme='https',
+      host='suntel-wialon.ru',
+      port=0,
+      session_id='',
+      extra_params=""
+    )
+
+    resp = sdk.login(str(token))
+    parameters_unit = {
+    'spec':{
+      'itemsType': "avl_unit",
+      'propName': "sys_name",
+      'propValueMask': "*",
+      'sortType': "sys_name",
+    #  'propType': str,
+      'or_logic': 0
+    },
+    'force': 1,
+    'flags': 269,
+    'from': 0,
+    'to': 0
+    }
+    units = sdk.core_search_items(parameters_unit)
+    parameters_user = {
+    'spec':{
+        "itemsType": "user",
+        "propName": "sys_name",
+        "propValueMask": "*",
+        "sortType": "sys_name",
+        "or_logic": 0
+    },
+    'force': 1,
+    'flags': 269,
+    'from': 0,
+    'to': 0
+    }
+    users = sdk.core_search_items(parameters_user)
+    sdk.logout()
+    return [units, users]
+
+
+
