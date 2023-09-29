@@ -2,7 +2,6 @@ from dotenv import dotenv_values
 
 config = dotenv_values(".env")
 
-# Define the bot token
 DB_USER = config["DB_USER"]
 DB_PASSWORD = config["DB_PASSWORD"]
 DB_HOST = config["DB_HOST"]
@@ -17,3 +16,6 @@ FORT_PASSWORD = config["FORT_PASSWORD"]
 
 WIALON_HOST_TOKEN = config["WIALON_HOST_TOKEN"]
 WIALON_LOCAL_TOKEN = config["WIALON_LOCAL_TOKEN"]
+
+SCOUT_LOGIN = config["SCOUT_LOGIN"]
+SCOUT_PASSWORD = config["SCOUT_PASSWORD"]

@@ -1,3 +1,5 @@
+import datetime
+
 def get_status(status: str):
     if "_новт" in status.lower():
         return int(1)

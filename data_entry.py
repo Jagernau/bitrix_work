@@ -1,4 +1,4 @@
-from parser.classes import Fort, Glonasssoft, get_wialin_host_units_users, get_wialin_local_units_users
+from parser.classes import Fort, Glonasssoft, get_wialin_host_units_users, get_wialin_local_units_users, Scout
 from configurations import config
 from database.crud import add_objects
 import json
@@ -141,3 +141,13 @@ def merge_wialon_local_data():
         result.append(marge)
     return result
 
+
+def merge_scout_data():
+    scout = Scout(str(config.SCOUT_LOGIN), str(config.SCOUT_PASSWORD))
+    token = scout.token
+    time.sleep(3)
+    units = scout.get_scout_units(str(token))
+    return units
+
+with open("scout_units.json", "w") as f:
+    json.dump(merge_scout_data(), f, indent=3, ensure_ascii=False)

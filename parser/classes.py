@@ -1,7 +1,7 @@
 import json
 import requests
 from wialon.sdk import WialonSdk
-
+import datetime
 
 class Glonasssoft:
     def __init__(self, login: str, password: str):
@@ -273,4 +273,48 @@ def get_wialin_local_units_users(token: str):
     return [units, users]
 
 
+class Scout:
+    def __init__(self, login: str, password: str):
+        self.login = login
+        self.password = password
+
+
+    def __get_current_timestamp_utc(self) -> str:
+        now = datetime.datetime.utcnow()
+        timestamp = "/Date(" + str(int(now.timestamp() * 1000)) + ")/"
+        return timestamp
+
+    @property
+    def token(self) -> str | None:
+        url = "http://89.208.197.19:11501/spic/auth/rest/Login"
+        payload = {
+            "Login": f"{self.login}",
+            "Password": f"{self.password}",
+            "TimeStampUtc": f"{self.__get_current_timestamp_utc()}",
+            "TimeZoneOlsonId": "Europe/Moscow",
+            "CultureName": "ru-ru",
+            "UiCultureName": "ru-ru"
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "json"
+        }
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        if response.status_code == 200:
+            token = response.json()["SessionId"]
+            return token
+        else:
+            return None
+
+
+    @staticmethod
+    def get_scout_units(token: str):
+        url = "http://89.208.197.19:11501/spic/units/rest/getAllUnits"
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "ScoutAuthorization": str(token)}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.status_code
+        
 
