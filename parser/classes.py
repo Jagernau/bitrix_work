@@ -317,4 +317,12 @@ class Scout:
         else:
             return response.status_code
         
-
+    @staticmethod
+    def get_scout_unit_groups(token: str):
+        url = "http://89.208.197.19:11501/spic/unitGroups/rest/"
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "ScoutAuthorization": str(token)}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.status_code

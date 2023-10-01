@@ -87,6 +87,23 @@ def add_one_object(marge_data: list):
 
 
 def delete_one_object(marge_data: list):
+    """
+    Удаляет один объект из БД
+    Сравнивает в бд:
+    1. По системе мониторинга
+    2. По id объекта в системе мониторинга
+    Принимает словарь вида:
+            "id_in_system": "123",
+            "name": "123",
+            "imei": "123456789012345",
+            "owner_agent": "abc"
+            "created": "2020-01-01",
+            "updated": "2020-01-01",
+            "add_date": "2020-01-01",
+            "monitor_sys_id": 1
+            "object_status_id": 1
+            "user": "abc"
+    """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
     objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
@@ -104,3 +121,23 @@ def delete_one_object(marge_data: list):
     session.commit()
     session.close()
 
+def update_one_object(marge_data: list):
+    """
+    Обновляет один объект в БД
+    Сравнивает в бд:
+    1. По системе мониторинга
+    2. По id объекта в системе мониторинга
+    Принимает словарь вида:
+            "id_in_system": "123",
+            "name": "123",
+            "imei": "123456789012345",
+            "owner_agent": "abc"
+            "created": "2020-01-01",
+            "updated": "2020-01-01",
+            "add_date": "2020-01-01",
+            "monitor_sys_id": 1
+            "object_status_id": 1
+            "user": "abc"
+    """
+    sys_id = marge_data[10]["monitor_sys_id"]
+    session = Database().session

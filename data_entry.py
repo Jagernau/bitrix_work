@@ -147,7 +147,9 @@ def merge_scout_data():
     token = scout.token
     time.sleep(3)
     units = scout.get_scout_units(str(token))
-    return units
+    time.sleep(3)
+    unit_groups = scout.get_scout_unit_groups(str(token))
+    return unit_groups
 
-with open("scout_units.json", "w") as f:
+with open("scout_unit_groups.json", "w") as f:
     json.dump(merge_scout_data(), f, indent=3, ensure_ascii=False)
