@@ -315,7 +315,7 @@ class Scout:
         if response.status_code == 200:
             return response.json()
         else:
-            return response.status_code
+            return None
         
     @staticmethod
     def get_scout_unit_groups(token: str):
@@ -325,4 +325,6 @@ class Scout:
         if response.status_code == 200:
             return response.json()
         else:
-            return response.status_code
+            return None
+
+

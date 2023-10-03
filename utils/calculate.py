@@ -3,9 +3,9 @@ import datetime
 def get_status(status: str):
     if "_новт" in status.lower():
         return int(1)
-    elif "_тест" in status.lower():
+    elif "тест" in status.lower():
         return int(2)
-    elif "_ппрог" in status.lower():
+    elif "_ппро" in status.lower():
         return int(4)
     elif "_приост" in status.lower():
         return int(5)
@@ -82,4 +82,10 @@ def get_wialon_user(vehicle_owner_id: str, users: list):
         if user["id"] == vehicle_owner_id:
             return user["nm"]
 
+def generate_scout_user(unit_id: str, users: list):
+    user_list = []
+    for user in users:
+        if unit_id in user["UnitIds"]:
+            user_list.append(user["GroupName"])
 
+    return user_list

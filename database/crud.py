@@ -141,3 +141,7 @@ def update_one_object(marge_data: list):
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
+    objects_in_db = session.query(models.CaObject).filter(
+        models.CaObject.sys_mon_id == sys_id        
+    )
+

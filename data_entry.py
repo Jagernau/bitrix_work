@@ -4,7 +4,7 @@ from database.crud import add_objects
 import json
 import time
 from datetime import datetime
-from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company, get_wialon_imei, get_wialon_agent, get_wialon_user
+from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company, get_wialon_imei, get_wialon_agent, get_wialon_user, generate_scout_user
 
 import emoji
 """
@@ -146,10 +146,23 @@ def merge_scout_data():
     scout = Scout(str(config.SCOUT_LOGIN), str(config.SCOUT_PASSWORD))
     token = scout.token
     time.sleep(3)
-    units = scout.get_scout_units(str(token))
+    units = scout.get_scout_units(str(token))["Units"]
     time.sleep(3)
-    unit_groups = scout.get_scout_unit_groups(str(token))
-    return unit_groups
+    unit_groups = scout.get_scout_unit_groups(str(token))["Groups"]
+    result = []
+    for i in units:
+        marge = {}
+        marge["id_in_system"] = i["UnitId"]
+        marge["name"] = i["Name"]
+        marge["imei"] = None
+        marge["owner_agent"] = i["Description"]
+        marge["created"] = None
+        marge["updated"] = None
+        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
+        marge["monitor_sys_id"] = int(6)
+        marge["object_status_id"] = get_status(i["Name"])
+        marge["user"] = str(generate_scout_user(i["UnitId"], unit_groups))
+        result.append(marge)
+    return result
 
-with open("scout_unit_groups.json", "w") as f:
-    json.dump(merge_scout_data(), f, indent=3, ensure_ascii=False)
+

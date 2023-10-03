@@ -40,6 +40,8 @@ while getopts ":c:m:v:h" opt; do
   esac
 done
 
-source ~/bitrix_work/env/bin/activate
-python3 ~/bitrix_work/py_comands.py $arg1 $arg2 $arg3
+cd ~/bitrix_work
+source env/bin/activate
+python3 py_comands.py $arg1 $arg2 $arg3
 deactivate
+cd
