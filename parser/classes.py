@@ -2,6 +2,15 @@ import json
 import requests
 from wialon.sdk import WialonSdk
 import datetime
+import sys
+sys.path.append('gen-py')
+
+from thrift import Thrift
+from thrift.transport import TSocket
+from thrift.transport import TTransport
+from thrift.protocol import TBinaryProtocol
+
+from thrif.dispatch.server.thrif.backend.DispatchBackend import Client
 
 class Glonasssoft:
     def __init__(self, login: str, password: str):
@@ -327,4 +336,19 @@ class Scout:
         else:
             return None
 
+def get_era_data(login: str, password: str, thrif_class_client):
+
+    url = "monitoring.aoglonass.ru"
+    transport = TSocket.TSocket(url, 19990)
+    transport = TTransport.TFramedTransport(transport)
+    protocol = TBinaryProtocol.TBinaryProtocol(transport)
+    open = transport.open()
+    client: Client = thrif_class_client(protocol)
+    session_id = client.login(login, password, True)
+    parent_id = client.getCurrentUser(session_id)
+    objects = client.getChildrenMonitoringObjects(session_id, parent_id.parentGroupId, True)
+    groups = client.getChildrenGroups(session_id, parent_id.parentGroupId, True)
+    users = client.getChildrenUsers(session_id, parent_id.parentGroupId, True)
+    transport.close()
+    return [objects, groups, users]
 

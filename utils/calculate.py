@@ -1,4 +1,3 @@
-import datetime
 
 def get_status(status: str):
     if "_новт" in status.lower():
@@ -89,3 +88,22 @@ def generate_scout_user(unit_id: str, users: list):
             user_list.append(user["GroupName"])
 
     return user_list
+
+
+def generate_era_company(group_id: str, companies):
+    for company in companies:
+        if group_id in company.id:
+            return company.title
+
+
+def generate_era_user(group_id, companies, users):
+    for company in companies:
+        if group_id in company.id:
+            parent_id = company.parentGroupId
+            for user in users:
+                if user.parentGroupId == parent_id:
+                    return user.login
+
+
+            
+

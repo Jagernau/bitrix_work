@@ -1,12 +1,29 @@
-from parser.classes import Fort, Glonasssoft, get_wialin_host_units_users, get_wialin_local_units_users, Scout
+from parser.classes import (
+        Fort, 
+        Glonasssoft, 
+        get_wialin_host_units_users, 
+        get_wialin_local_units_users, 
+        Scout, 
+        get_era_data
+        )
 from configurations import config
-from database.crud import add_objects
-import json
 import time
 from datetime import datetime
-from utils.calculate import get_status, get_glonas_user, get_fort_user, get_fort_company, get_wialon_imei, get_wialon_agent, get_wialon_user, generate_scout_user
+from utils.calculate import (
+        get_status, 
+        get_glonas_user, 
+        get_fort_user, 
+        get_fort_company, 
+        get_wialon_imei, 
+        get_wialon_agent, 
+        get_wialon_user, 
+        generate_scout_user, 
+        generate_era_company,
+        generate_era_user
+        )
 
 import emoji
+import json
 """
     API on vehicles, agents, and users.
 
@@ -162,6 +179,30 @@ def merge_scout_data():
         marge["monitor_sys_id"] = int(6)
         marge["object_status_id"] = get_status(i["Name"])
         marge["user"] = str(generate_scout_user(i["UnitId"], unit_groups))
+        result.append(marge)
+    return result
+
+
+def merge_era_data():
+    from thrif.dispatch.server.thrif.backend.DispatchBackend import Client
+
+    era = get_era_data(str(config.ERA_LOGIN), str(config.ERA_PASSWORD), Client)
+    objects = era[0]
+    groups = era[1]
+    users = era[2]
+    result = []
+    for i in objects:
+        marge = {}
+        marge["id_in_system"] = str(i.id)
+        marge["name"] = i.name
+        marge["imei"] = i.tracker.identifier[0]
+        marge["owner_agent"] = generate_era_company(i.parentGroupId, groups)
+        marge["created"] = None
+        marge["updated"] = None
+        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
+        marge["monitor_sys_id"] = int(5)
+        marge["object_status_id"] = get_status(i.name)
+        marge["user"] = generate_era_user(i.parentGroupId, groups, users)
         result.append(marge)
     return result
 
