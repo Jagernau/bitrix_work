@@ -202,7 +202,7 @@ def merge_era_data():
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(5)
         marge["object_status_id"] = get_status(i.name)
-        marge["user"] = generate_era_user(i.parentGroupId, groups, users)
+        marge["user"] = generate_era_user(i.parentGroupId, users)
         result.append(marge)
     return result
 

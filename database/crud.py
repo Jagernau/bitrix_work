@@ -1,6 +1,6 @@
 import database.models as models
 from database.database import Database
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, update
 from datetime import datetime
 
 
@@ -144,4 +144,29 @@ def update_one_object(marge_data: list):
     objects_in_db = session.query(models.CaObject).filter(
         models.CaObject.sys_mon_id == sys_id        
     )
+    for i in marge_data:
+      
+        for e in objects_in_db:
+            if i["id_in_system"] == e.sys_mon_object_id:
+                if i["name"] != e.object_name:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_name = i["name"]))
+                if i["imei"] != e.imei:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(imei = i["imei"]))
+                if i["owner_agent"] != e.owner_contragent:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_contragent = i["owner_agent"]))
+                if i["created"] != e.object_created:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_created = i["created"]))
+                if i["updated"] != e.updated:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(updated = i["updated"]))
+                #if i["add_date"] != e.object_add_date:
+                    #session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"]).values(object_add_date = i["add_date"]))
+                #if i["monitor_sys_id"] != e.sys_mon_id:
+                    #session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"]).values(sys_mon_id = i["monitor_sys_id"]))
+                if i["object_status_id"] != e.object_status:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
+                if i["user"] != e.owner_user:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_user = i["user"]))
+
+    session.commit()
+    session.close()
 

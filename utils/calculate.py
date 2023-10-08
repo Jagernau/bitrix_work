@@ -96,14 +96,9 @@ def generate_era_company(group_id: str, companies):
             return company.title
 
 
-def generate_era_user(group_id, companies, users):
-    for company in companies:
-        if group_id in company.id:
-            parent_id = company.parentGroupId
-            for user in users:
-                if user.parentGroupId == parent_id:
-                    return user.login
+def generate_era_user(group_id, users):
+    for user in users:
+        if user.parentGroupId == group_id:
+            return user.login
 
-
-            
 
