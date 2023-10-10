@@ -13,7 +13,8 @@ from utils.calculate import (
         get_status, 
         get_glonas_user, 
         get_fort_user, 
-        get_fort_company, 
+        get_fort_company,
+        get_fort_company_group,
         get_wialon_imei, 
         get_wialon_agent, 
         get_wialon_user, 
@@ -88,7 +89,7 @@ def merge_fort_data():
         marge["id_in_system"] = str(i["id"])
         marge["name"] = i["name"]
         marge["imei"] = i["IMEI"]
-        marge["owner_agent"] = get_fort_company(i["groupId"], companies, groups_companies)
+        marge["owner_agent"] = get_fort_company_group(i["groupId"], groups_companies)
         marge["created"] = None
         marge["updated"] = None
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")

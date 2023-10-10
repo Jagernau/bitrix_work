@@ -44,7 +44,17 @@ def get_fort_company(obj_group_id:int, companies: list, grops_companies):
                     for company in companies:
                         if company["id"] == group_company["companyId"]:
                             return company["name"]
-    
+
+
+def get_fort_company_group(obj_group_id:int, grops_companies):
+    for group_company in grops_companies:
+        if group_company["companyId"] == obj_group_id:
+            return group_company["name"]
+
+
+
+
+
 
 def get_wialon_imei(field: dict):
     if len(field) == 0:

@@ -1,0 +1,206 @@
+#! env/bin/python 
+import click
+from parser import classes
+from  configurations import config
+import time
+import os
+from data_entry import (
+        merge_glonasssoft_data, 
+        merge_fort_data, 
+        merge_wialon_host_data,
+        merge_wialon_local_data,
+        merge_scout_data,
+        merge_era_data
+        )
+from database.crud import (
+        add_objects,
+        add_one_object,
+        delete_one_object,
+        update_one_object,
+        )
+
+
+
+@click.command()
+@click.option(
+        "-c", "--comand", "comand",
+        default=None,
+        type=str, help=""" 
+        Какую команду использовать: \n
+        get_json - Показать json \n 
+        crud_bd - Работа с бд \n 
+        3 - ... \n 
+        4 - ... \n
+        """
+        )
+@click.option(
+        "-m", "--monitor", "monitor", 
+        default=None, 
+        type=str, help="""
+        Какой мониторинг использовать: \n
+        glonass \n
+        fort \n
+        whost \n
+        wlocal \n
+        scout \n
+        era \n
+        """
+        )
+@click.option(
+        "-v", "--value", "value", 
+        default=None, 
+        type=str, help=""" 
+        Значения для get_json: \n
+        objects - Объекты\n 
+        agents - Клиенты\n 
+        merge - Сводная инфо\n 
+
+        Значения для crud_bd: \n
+        add_all_obj - Загрузить все сведённые объекты в бд из парсера\n 
+        rec_add_one_obj - Рекрусивно добавить объект в бд из парсера\n 
+        rec_del_one_obj - Рекрусивно удалить объект из бд которого нет из парсера \n 
+        rec_upd_one_obj - Рекрусивно обновить по объектно из парсера \n
+        """
+        )
+def main(comand, monitor, value):
+    if comand != None:
+        if comand == "get_json":
+            if monitor == "glonass":
+                glonasssoft = classes.Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+                token = str(glonasssoft.token)
+                if value == "objects":
+                    time.sleep(1)
+                    print(glonasssoft.get_glonasssoft_vehicles(token=token))
+                if value == "agents":
+                    time.sleep(1)
+                    print(glonasssoft.get_glonasssoft_agents(token=token))
+                if value == "merge":
+                    time.sleep(1)
+                    print(merge_glonasssoft_data())
+
+            if monitor == "fort":
+                fort = classes.Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
+                token = str(fort.token)
+                if value == "objects":
+                    time.sleep(1)
+                    print(fort.get_fort_objects(token=token))
+                if value == "agents":
+                    time.sleep(1)
+                    print(fort.get_fort_companies(token=token))
+                if value == "merge":
+                    time.sleep(1)
+                    print(merge_fort_data())
+
+            if monitor == "whost":
+                wialon_data = classes.get_wialin_host_units_users(str(config.WIALON_HOST_TOKEN))
+                if value == "objects":
+                    time.sleep(1)
+                    print(wialon_data[0])
+                if value == "agents":
+                    time.sleep(1)
+                    print(wialon_data[1])
+                if value == "merge":
+                    time.sleep(1)
+                    print(merge_wialon_host_data())
+
+            if monitor == "wlocal":
+                wialon_data = classes.get_wialin_local_units_users(str(config.WIALON_LOCAL_TOKEN))
+                if value == "objects":
+                    time.sleep(1)
+                    print(wialon_data[0])
+                if value == "agents":
+                    time.sleep(1)
+                    print(wialon_data[1])
+                if value == "merge":
+                    time.sleep(1)
+                    print(merge_wialon_local_data())
+
+            if monitor == "scout":
+                scout = classes.Scout(str(config.SCOUT_LOGIN), str(config.SCOUT_PASSWORD))
+                token = str(scout.token)
+                if value == "objects":
+                    time.sleep(1)
+                    print(scout.get_scout_units(token=token))
+                if value == "agents":
+                    time.sleep(1)
+                    print(scout.get_scout_unit_groups(token=token))
+                if value == "merge":
+                    time.sleep(1)
+                    print(merge_scout_data())
+
+            if monitor == "era":
+                from thrif.dispatch.server.thrif.backend.DispatchBackend import Client
+                era = classes.get_era_data(str(config.ERA_LOGIN), str(config.ERA_PASSWORD), Client)
+                if value == "objects":
+                    time.sleep(1)
+                    print(era[0])
+                if value == "agents":
+                    time.sleep(1)
+                    print(era[1])
+                if value == "merge":
+                    time.sleep(1)
+                    print(merge_era_data())
+
+
+        if comand == "crud_bd":
+            if monitor == "glonass":
+                if value == "add_all_obj":
+                    add_objects(merge_glonasssoft_data())
+                if value == "rec_add_one_obj":
+                    add_one_object(merge_glonasssoft_data())
+                if value == "rec_del_one_obj":
+                    delete_one_object(merge_glonasssoft_data())
+                if value == "rec_upd_one_obj":
+                    update_one_object(merge_glonasssoft_data())
+            if monitor == "fort":
+                if value == "add_all_obj":
+                    add_objects(merge_fort_data())
+                if value == "rec_add_one_obj":
+                    add_one_object(merge_fort_data())
+                if value == "rec_del_one_obj":
+                    delete_one_object(merge_fort_data())
+                if value == "rec_upd_one_obj":
+                    update_one_object(merge_fort_data())
+            if monitor == "whost":
+                if value == "add_all_obj":
+                    add_objects(merge_wialon_host_data())
+                if value == "rec_add_one_obj":
+                    add_one_object(merge_wialon_host_data())
+                if value == "rec_del_one_obj":
+                    delete_one_object(merge_wialon_host_data())
+                if value == "rec_upd_one_obj":
+                    update_one_object(merge_wialon_host_data())
+            if monitor == "wlocal":
+                if value == "add_all_obj":
+                    add_objects(merge_wialon_local_data())
+                if value == "rec_add_one_obj":
+                    add_one_object(merge_wialon_local_data())
+                if value == "rec_del_one_obj":
+                    delete_one_object(merge_wialon_local_data())
+                if value == "rec_upd_one_obj":
+                    update_one_object(merge_wialon_local_data())
+            if monitor == "scout":
+                if value == "add_all_obj":
+                    add_objects(merge_scout_data())
+                if value == "rec_add_one_obj":
+                    add_one_object(merge_scout_data())
+                if value == "rec_del_one_obj":
+                    delete_one_object(merge_scout_data())
+                if value == "rec_upd_one_obj":
+                    update_one_object(merge_scout_data())
+            if monitor == "era":
+                if value == "add_all_obj":
+                    add_objects(merge_era_data())
+                if value == "rec_add_one_obj":
+                    add_one_object(merge_era_data())
+                if value == "rec_del_one_obj":
+                    delete_one_object(merge_era_data())
+                if value == "rec_upd_one_obj":
+                    update_one_object(merge_era_data())
+                
+    else:
+        print("Неуказана команда")
+            
+
+if __name__ == "__main__":
+    main()
