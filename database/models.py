@@ -8,6 +8,13 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
+class CellOperator(Base):
+    __tablename__ = 'Cell_operator'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(60, 'utf8mb3_unicode_ci'), nullable=False)
+
+
 class GuaranteeTerm(Base):
     __tablename__ = 'guarantee_terms'
 
@@ -45,7 +52,8 @@ class Contragent(Base):
 
     ca_id = Column(Integer, primary_key=True, comment='ID компании')
     ca_holding_id = Column(ForeignKey('holdings.holding_id'), index=True, comment='ID холдинга')
-    ca_name = Column(VARCHAR(60), comment='Название контрагента')
+    ca_name = Column(VARCHAR(250), comment='Название контрагента')
+    ca_shortname = Column(String(250, 'utf8mb3_unicode_ci'))
     ca_inn = Column(VARCHAR(60), comment='ИНН контрагента')
     ca_kpp = Column(VARCHAR(60), comment='КПП контрагента')
     ca_bill_account_num = Column(VARCHAR(60), comment='Расчетный счет')
@@ -62,8 +70,8 @@ class LoginUser(Base):
     __tablename__ = 'Login_users'
 
     id = Column(Integer, primary_key=True)
-    client_name = Column(VARCHAR(60))
-    login = Column(VARCHAR(60), unique=True)
+    client_name = Column(VARCHAR(200))
+    login = Column(VARCHAR(60))
     email = Column(VARCHAR(60))
     password = Column(VARCHAR(60))
     date_create = Column(Date)
@@ -84,7 +92,7 @@ class CaObject(Base):
     object_last_message = Column(DateTime, comment='Дата последнего сообщения')
     object_margin = Column(Integer, comment='Надбавка к базовой цене объекта')
     owner_contragent = Column(VARCHAR(200), comment='Хозяин контрагент')
-    owner_user = Column(String(255, 'utf8mb3_unicode_ci'), comment='Хозяин юзер')
+    owner_user = Column(VARCHAR(255), comment='Хозяин юзер')
     imei = Column(VARCHAR(30), comment='идентификатор терминала')
     updated = Column(DateTime, comment='Когда изменён')
     object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')
@@ -167,15 +175,15 @@ class ObjectSensor(Base):
     __tablename__ = 'object_sensors'
 
     sensor_id = Column(Integer, primary_key=True)
-    sensor_object_id = Column(ForeignKey('ca_objects.id'), index=True)
-    sensor_name = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_type = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_vendor = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_vendor_model = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_serial = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_mac_address = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_technology = Column(String(255, 'utf8mb3_unicode_ci'))
-    sensor_connect_type = Column(String(255, 'utf8mb3_unicode_ci'))
+    sensor_object_id = Column(ForeignKey('ca_objects.id'), index=True, comment='На каком объекте стоит по ID объекта')
+    sensor_name = Column(VARCHAR(255), comment='Имя датчика в СМ')
+    sensor_type = Column(VARCHAR(255), comment='Тип датчика(ДУТ, Температуры, наклона)')
+    sensor_vendor = Column(VARCHAR(255), comment='производитель')
+    sensor_vendor_model = Column(VARCHAR(255), comment='Модель датчика')
+    sensor_serial = Column(VARCHAR(255), comment='Серийный номер датчика')
+    sensor_mac_address = Column(VARCHAR(255), comment='Мак адрес датчика')
+    sensor_technology = Column(VARCHAR(255), comment='Подтип датчика(аналоговый, цифровой, частотный)')
+    sensor_connect_type = Column(VARCHAR(255), comment='Тип подключения')
 
     sensor_object = relationship('CaObject')
 
@@ -202,14 +210,16 @@ class SimCard(Base):
     __tablename__ = 'sim_cards'
 
     sim_id = Column(Integer, primary_key=True)
-    sim_device_id = Column(ForeignKey('devices.device_id'), index=True)
-    sim_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True)
-    sim_cell_operator = Column(VARCHAR(40))
-    sim_tel_number = Column(VARCHAR(40), unique=True)
-    sim_owner = Column(VARCHAR(40))
-    sim_iccid = Column(VARCHAR(40), unique=True)
-    sim_ca_price = Column(Integer)
-    sim_suntel_price = Column(Integer)
+    sim_iccid = Column(VARCHAR(40), unique=True, comment='ICCID')
+    sim_tel_number = Column(VARCHAR(40), unique=True, comment='телефонный номер сим')
+    client_name = Column(VARCHAR(270), comment='Имя клиента')
+    sim_cell_operator = Column(ForeignKey('Cell_operator.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Сотовый оператор(надо по ID)')
+    sim_owner = Column(TINYINT(1), comment='Владелец сим (мы или клиент)')
+    sim_ca_price = Column(Integer, comment='Стоимость сим для клиента')
+    sim_suntel_price = Column(Integer, comment='Стоимость сим для Сантел(закупочная)')
+    sim_device_id = Column(ForeignKey('devices.device_id'), index=True, comment='ID к девайсам(devices)')
+    sim_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
 
     sim_ca = relationship('Contragent')
+    Cell_operator = relationship('CellOperator')
     sim_device = relationship('Device')

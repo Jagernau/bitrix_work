@@ -1,0 +1,30 @@
+#! env/bin/python 
+import click
+from parser import classes
+from  configurations import config
+import time
+import os
+import json
+from data_entry import (
+    get_postgre_clients,
+)
+
+
+
+@click.command()
+@click.option(
+        "-c", "--comand", "comand",
+        default=None,
+        type=str, help=""" 
+        Какую команду использовать: \n
+        get_client_json - Показать json \n 
+        """
+        )
+def main(comand):
+    if comand == "get_client_json":
+        clients = get_postgre_clients()
+        json_output = json.dumps(clients, indent=3, ensure_ascii=False)
+        print(json_output)
+
+if __name__ == "__main__":
+    main()

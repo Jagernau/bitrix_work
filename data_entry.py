@@ -4,7 +4,10 @@ from parser.classes import (
         get_wialin_host_units_users, 
         get_wialin_local_units_users, 
         Scout, 
-        get_era_data
+        get_era_data,
+        SunPostgres,
+
+
         )
 from configurations import config
 import time
@@ -206,5 +209,11 @@ def merge_era_data():
         marge["user"] = generate_era_user(i.parentGroupId, users)
         result.append(marge)
     return result
+
+
+def get_postgre_clients():
+    sun = SunPostgres(str(config.SUNAPI_TOKEN))
+    clients = sun.get_clients()
+    return clients
 
 

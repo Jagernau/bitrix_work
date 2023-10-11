@@ -352,3 +352,25 @@ def get_era_data(login: str, password: str, thrif_class_client):
     transport.close()
     return [objects, groups, users]
 
+
+class SunPostgres:
+    def __init__(self, token: str):
+        self.token = token
+
+    def get_clients(self):
+
+        url = 'http://158.160.73.178:8000/api/tklient/'
+        headers = {
+            'Authorization': f'Token {self.token}',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            clients = response.json()
+            return clients
+        else:
+            return None
+
+

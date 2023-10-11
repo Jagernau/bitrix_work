@@ -28,8 +28,7 @@ from database.crud import (
         type=str, help=""" 
         Какую команду использовать: \n
         get_json - Показать json \n 
-        crud_bd - Работа с бд \n 
-        3 - ... \n 
+        crud_objects - Работа с объектами(добавить из парсера в бд, удалить из бд, обновить в бд) \n
         4 - ... \n
         """
         )
@@ -55,7 +54,7 @@ from database.crud import (
         agents - Клиенты\n 
         merge - Сводная инфо\n 
 
-        Значения для crud_bd: \n
+        Значения для crud_objects: \n
         add_all_obj - Загрузить все сведённые объекты в бд из парсера\n 
         rec_add_one_obj - Рекрусивно добавить объект в бд из парсера\n 
         rec_del_one_obj - Рекрусивно удалить объект из бд которого нет из парсера \n 
@@ -142,7 +141,7 @@ def main(comand, monitor, value):
                     print(merge_era_data())
 
 
-        if comand == "crud_bd":
+        if comand == "crud_objects":
             if monitor == "glonass":
                 if value == "add_all_obj":
                     add_objects(merge_glonasssoft_data())

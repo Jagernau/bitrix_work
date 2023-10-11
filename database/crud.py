@@ -170,3 +170,27 @@ def update_one_object(marge_data: list):
     session.commit()
     session.close()
 
+
+
+def add_clients_postgre(clients):
+    """
+    Добавляет клиентов в БД
+      "name": "Венета ООО",
+      "shortname": " ООО Венета",
+      "type": "Юридическое лицо",
+      "inn": "5258072217",
+      "kpp": "525801001",
+      "tarif": null
+    """
+    session = Database().session
+    for i in clients:
+       client = models.Contragent(
+            ca_name=i["name"].replace('\xa0', ' '),
+            ca_shortname=i["shortname"].replace('\xa0', ' '),
+            ca_type=i["type"].replace('\xa0', ' '),
+            ca_inn=i["inn"],
+            ca_kpp=i["kpp"],
+        )
+       session.add(client)
+    session.commit()
+    session.close()
