@@ -50,9 +50,9 @@ class ObjectStatus(Base):
 class Contragent(Base):
     __tablename__ = 'Contragents'
 
-    ca_id = Column(Integer, primary_key=True, comment='ID компании')
+    ca_id = Column(Integer, primary_key=True)
     ca_holding_id = Column(ForeignKey('holdings.holding_id'), index=True, comment='ID холдинга')
-    ca_name = Column(VARCHAR(250), comment='Название контрагента')
+    ca_name = Column(VARCHAR(255), comment='Название контрагента')
     ca_shortname = Column(String(250, 'utf8mb3_unicode_ci'))
     ca_inn = Column(VARCHAR(60), comment='ИНН контрагента')
     ca_kpp = Column(VARCHAR(60), comment='КПП контрагента')
@@ -96,6 +96,7 @@ class CaObject(Base):
     imei = Column(VARCHAR(30), comment='идентификатор терминала')
     updated = Column(DateTime, comment='Когда изменён')
     object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')
+    parent_id_sys = Column(VARCHAR(200), comment='Id клиента в системе мониторинга')
 
     object_status1 = relationship('ObjectStatus')
     sys_mon = relationship('MonitoringSystem')
@@ -131,6 +132,19 @@ class CaContract(Base):
     contract_expired_date = Column(Date, comment='Дата завершения договора')
 
     ca = relationship('Contragent')
+
+
+class ClientsInSystemMonitor(Base):
+    __tablename__ = 'clients_in_system_monitor'
+
+    id = Column(Integer, primary_key=True)
+    id_in_system_monitor = Column(String(200, 'utf8mb3_unicode_ci'))
+    name_in_system_monitor = Column(String(200, 'utf8mb3_unicode_ci'))
+    system_monitor_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Id системы мониторинга ')
+    client_id = Column(ForeignKey('Contragents.ca_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='id клиента')
+
+    client = relationship('Contragent')
+    system_monitor = relationship('MonitoringSystem')
 
 
 class Device(Base):
@@ -210,8 +224,8 @@ class SimCard(Base):
     __tablename__ = 'sim_cards'
 
     sim_id = Column(Integer, primary_key=True)
-    sim_iccid = Column(VARCHAR(40), unique=True, comment='ICCID')
-    sim_tel_number = Column(VARCHAR(40), unique=True, comment='телефонный номер сим')
+    sim_iccid = Column(VARCHAR(40), comment='ICCID')
+    sim_tel_number = Column(VARCHAR(40), comment='телефонный номер сим')
     client_name = Column(VARCHAR(270), comment='Имя клиента')
     sim_cell_operator = Column(ForeignKey('Cell_operator.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Сотовый оператор(надо по ID)')
     sim_owner = Column(TINYINT(1), comment='Владелец сим (мы или клиент)')

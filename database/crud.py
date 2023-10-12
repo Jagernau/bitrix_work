@@ -20,6 +20,7 @@ def add_objects(marge_data: list):
             "monitor_sys_id": 1
             "object_status_id": 1
             "user": "abc"
+            "parent_id": "123"
     """
     session = Database().session
     for i in marge_data:
@@ -33,7 +34,8 @@ def add_objects(marge_data: list):
             object_add_date=i["add_date"],
             sys_mon_id=i["monitor_sys_id"],
             object_status=i["object_status_id"],
-            owner_user=i["user"]
+            owner_user=i["user"],
+            parent_id_sys = i["parent_id"]
         )
         session.add(ca_object)
     session.commit()
@@ -57,6 +59,7 @@ def add_one_object(marge_data: list):
             "monitor_sys_id": 1
             "object_status_id": 1
             "user": "abc"
+            "parent_id": "123"
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
@@ -79,7 +82,9 @@ def add_one_object(marge_data: list):
                 object_add_date=item["add_date"],
                 sys_mon_id=item["monitor_sys_id"],
                 object_status=item["object_status_id"],
-                owner_user=item["user"]
+                owner_user=item["user"],
+                parent_id_sys = item["parent_id"]
+
             )
             session.add(ca_object)
     session.commit()
@@ -103,6 +108,7 @@ def delete_one_object(marge_data: list):
             "monitor_sys_id": 1
             "object_status_id": 1
             "user": "abc"
+            "parent_id": "123"
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
@@ -138,6 +144,7 @@ def update_one_object(marge_data: list):
             "monitor_sys_id": 1
             "object_status_id": 1
             "user": "abc"
+            "parent_id": "123"
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
@@ -166,6 +173,8 @@ def update_one_object(marge_data: list):
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
                 if i["user"] != e.owner_user:
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_user = i["user"]))
+                if i["parent_id"] != e.parent_id_sys:
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
 
     session.commit()
     session.close()

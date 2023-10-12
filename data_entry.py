@@ -68,6 +68,7 @@ def merge_glonasssoft_data():
         marge["monitor_sys_id"] = int(1)
         marge["object_status_id"] = get_status(i["number"])
         marge["user"] = get_glonas_user(i["owner"], users)
+        marge["parent_id"] = i["owner"]
         result.append(marge)
     return result
 
@@ -98,7 +99,8 @@ def merge_fort_data():
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(2)
         marge["object_status_id"] = get_status(i["name"])
-        marge["user"] = str(get_fort_user(marge["owner_agent"], users, companies))      
+        marge["user"] = str(get_fort_user(marge["owner_agent"], users, companies))  
+        marge["parent_id"] = i["groupId"]
         result.append(marge)
     return result
 
@@ -129,6 +131,7 @@ def merge_wialon_host_data():
         else:
             marge["object_status_id"] = get_status(i["nm"])
         marge["user"] = get_wialon_user(i["crt"], users)
+        marge["parent_id"] = i["crt"]
         result.append(marge)
     return result
 
@@ -159,6 +162,7 @@ def merge_wialon_local_data():
         else:
             marge["object_status_id"] = get_status(i["nm"])
         marge["user"] = get_wialon_user(i["crt"], users)
+        marge["parent_id"] = i["crt"]
         result.append(marge)
     return result
 
@@ -183,6 +187,7 @@ def merge_scout_data():
         marge["monitor_sys_id"] = int(6)
         marge["object_status_id"] = get_status(i["Name"])
         marge["user"] = str(generate_scout_user(i["UnitId"], unit_groups))
+        marge["parent_id"] = i["CompanyId"]
         result.append(marge)
     return result
 
@@ -207,6 +212,7 @@ def merge_era_data():
         marge["monitor_sys_id"] = int(5)
         marge["object_status_id"] = get_status(i.name)
         marge["user"] = generate_era_user(i.parentGroupId, users)
+        marge["parent_id"] = i.parentGroupId
         result.append(marge)
     return result
 
@@ -217,3 +223,16 @@ def get_postgre_clients():
     return clients
 
 
+def create_glonass_client(json_data):
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    client = glonasssoft.add_client(token=token, name=json_data["name"], inn=json_data["inn"], kpp=json_data["kpp"])
+    return client
+
+print (create_glonass_client({
+    "parentId": "123",
+    "name": "test",
+    "inn": "1234567890",
+    "kpp": "123456789"
+}))

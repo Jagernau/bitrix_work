@@ -85,16 +85,49 @@ class Glonasssoft:
         else:
             return None
 
-    def get_glonasssoft_sensors(self):
+    @staticmethod
+    def get_glonasssoft_sensors(token: str):
         url = "https://hosting.glonasssoft.ru/api/v3/sensors/types"
-        headers = {"X-Auth": self.token, 'Content-type': 'application/json', 'Accept': 'application/json'}
+        headers = {"X-Auth": token, 'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.get(url, headers=headers,)
         if response.status_code == 200:
             result = response.json()
             return result
         else:
             return None
-
+    
+    @staticmethod
+    def add_client(*ars, **kwargs):
+        # url = "https://hosting.glonasssoft.ru/api/v3/agents"
+        # headers = {
+        #     "X-Auth": api_token
+        # }
+        # data = {
+        #     "parentId": parent_id,
+        #     "name": name,
+        #     "fullName": full_name,
+        #     "agentInfoType": agent_info_type,
+        #     "isForeign": is_foreign,
+        #     "district": district,
+        #     "region": region,
+        #     "city": city,
+        #     "inn": inn,
+        #     "kpp": kpp,
+        #     "address": address,
+        #     "addressFact": address_fact,
+        #     "email": email,
+        #     "director": director,
+        #     "bankName": bank_name,
+        #     "bankBIK": bank_bik,
+        #     "bankRS": bank_rs,
+        #     "bankKS": bank_ks
+        # }
+        # response = requests.post(url, headers=headers, json=data)
+        # if response.status_code == 200:
+        #     print("Client added successfully.")
+        # else:
+        #     print("Failed to add client. Error:", response.text)
+        return kwargs
 
 class Fort:
     def __init__(self, login: str, password: str):
