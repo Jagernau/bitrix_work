@@ -7,6 +7,8 @@ import os
 import json
 from data_entry import (
     get_postgre_clients,
+    create_glonass_client,
+
 )
 
 
@@ -17,14 +19,51 @@ from data_entry import (
         default=None,
         type=str, help=""" 
         Какую команду использовать: \n
-        get_client_json - Показать json \n 
+        get_postgres_clients_json - Показать json клиентов базы данных postgres\n 
+        create_client - создаёт клиента в системе мониторинга \n
+        ... \n
         """
         )
-def main(comand):
-    if comand == "get_client_json":
+@click.option(
+        "-m", "--monitor", "monitor", 
+        default=None, 
+        type=str, help="""
+        Какой мониторинг использовать: \n
+        glonass \n
+        fort \n
+        whost \n
+        wlocal \n
+        scout \n
+        era \n
+        """
+        )
+@click.option(
+        "-v", "--value", "value", 
+        default=None, 
+        type=str, help=""" 
+        Значения для create_client: \n
+        принимает json клиента \n
+        {
+            "parentId": parent_id, Сантел: "80eb1587-12cf-44d4-b0d0-c09b7ddf6110"
+            "name": name,
+            "fullName": full_name,
+            "inn": inn,
+            "kpp": kpp,
+        } \n
+        """
+        )
+
+
+def main(comand, monitor, value):
+    if comand == "get_postgres_clients_json":
         clients = get_postgre_clients()
         json_output = json.dumps(clients, indent=3, ensure_ascii=False)
         print(json_output)
+
+    if comand == "create_client":
+        if monitor == "glonass":
+            glonass_client = create_glonass_client(json.loads(value))
+            print(glonass_client)
 
 if __name__ == "__main__":
     main()

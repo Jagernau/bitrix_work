@@ -227,12 +227,13 @@ def create_glonass_client(json_data):
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
     token = str(glonasssoft.token)
     time.sleep(2)
-    client = glonasssoft.add_client(token=token, name=json_data["name"], inn=json_data["inn"], kpp=json_data["kpp"])
+    client = glonasssoft.add_client(
+            token=token, 
+            parentId=json_data["parentId"],
+            name=json_data["name"],
+            fullName=json_data["fullName"],
+            inn=json_data["inn"],
+            kpp=json_data["kpp"],
+            )
     return client
 
-print (create_glonass_client({
-    "parentId": "123",
-    "name": "test",
-    "inn": "1234567890",
-    "kpp": "123456789"
-}))

@@ -98,36 +98,36 @@ class Glonasssoft:
     
     @staticmethod
     def add_client(*ars, **kwargs):
-        # url = "https://hosting.glonasssoft.ru/api/v3/agents"
-        # headers = {
-        #     "X-Auth": api_token
-        # }
-        # data = {
-        #     "parentId": parent_id,
-        #     "name": name,
-        #     "fullName": full_name,
-        #     "agentInfoType": agent_info_type,
-        #     "isForeign": is_foreign,
-        #     "district": district,
-        #     "region": region,
-        #     "city": city,
-        #     "inn": inn,
-        #     "kpp": kpp,
-        #     "address": address,
-        #     "addressFact": address_fact,
-        #     "email": email,
-        #     "director": director,
-        #     "bankName": bank_name,
-        #     "bankBIK": bank_bik,
-        #     "bankRS": bank_rs,
-        #     "bankKS": bank_ks
-        # }
-        # response = requests.post(url, headers=headers, json=data)
-        # if response.status_code == 200:
-        #     print("Client added successfully.")
-        # else:
-        #     print("Failed to add client. Error:", response.text)
-        return kwargs
+        url = "https://hosting.glonasssoft.ru/api/v3/agents"
+        headers = {
+            "X-Auth": kwargs["token"]
+        }
+        data = {
+            "parentId": kwargs["parentId"],
+            "name": kwargs["name"],
+            "fullName": kwargs["fullName"],
+            "agentInfoType": 0,
+            "isForeign": False,
+            "district": "",
+            "region": "",
+            "city": "",
+            "inn": kwargs["inn"],
+            "kpp": kwargs["kpp"],
+            "address": "",
+            "addressFact": "",
+            "email": "",
+            "director": "",
+            "bankName": "",
+            "bankBIK": "",
+            "bankRS": "",
+            "bankKS": ""
+        }
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return "Client added successfully."
+        else:
+            return f"Failed to add client. Error:  {response.text}"
+
 
 class Fort:
     def __init__(self, login: str, password: str):
