@@ -216,6 +216,9 @@ def merge_era_data():
         result.append(marge)
     return result
 
+###############################################
+# CLIENTS
+###############################################
 
 def get_postgre_clients():
     sun = SunPostgres(str(config.SUNAPI_TOKEN))
@@ -224,6 +227,11 @@ def get_postgre_clients():
 
 
 def create_glonass_client(json_data):
+    """"
+    Создание клиента в системе мониторинга глонасс
+    :param json_data:
+    :return:
+    """
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
     token = str(glonasssoft.token)
     time.sleep(2)
@@ -235,5 +243,47 @@ def create_glonass_client(json_data):
             inn=json_data["inn"],
             kpp=json_data["kpp"],
             )
+    return client
+
+
+def generate_glonass_client():
+    """"
+    Генерация клиентов для базы данных mysql
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    client = glonasssoft.get_glonasssoft_agents(token=token)
+    result = []
+    for i in client:
+        marge = {}
+        marge["id_in_system_monitor"] = str(i["id"])
+        marge["name_in_system_monitor"] = str(i["name"])
+        marge["owner_id_sys_mon"] = str(i["owner"])
+        marge["system_monitor_id"] = 1
+        result.append(marge)
+    return result
+
+
+def update_glonass_client(json_data):
+    """"
+    Обновление клиента
+    :param json_data:
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    client = glonasssoft.update_client(
+            token=token, 
+            agentId=json_data["agentId"],
+            parentId=json_data["parentId"],
+            name=json_data["name"],
+            fullName=json_data["fullName"],
+            #inn=json_data["inn"],
+            #kpp=json_data["kpp"],
+            )
+
     return client
 

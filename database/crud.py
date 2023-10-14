@@ -180,6 +180,10 @@ def update_one_object(marge_data: list):
     session.close()
 
 
+###################
+# Клиенты
+###################
+
 
 def add_clients_postgre(clients):
     """
@@ -203,3 +207,83 @@ def add_clients_postgre(clients):
        session.add(client)
     session.commit()
     session.close()
+
+
+def add_sys_mon_clients(clients):
+    """
+    Добавляет клиентов в БД из системы мониторинга
+        marge["id_in_system_monitor"] = str(i["id"])
+        marge["name_in_system_monitor"] = str(i["name"])
+        marge["owner_id_sys_mon"] = str(i["owner"])
+        marge["system_monitor_id"] = 1
+
+    """
+    session = Database().session
+    for i in clients:
+        client = models.ClientsInSystemMonitor(
+            id_in_system_monitor=i["id_in_system_monitor"],
+            name_in_system_monitor=i["name_in_system_monitor"],
+            owner_id_sys_mon=i["owner_id_sys_mon"],
+            system_monitor_id=i["system_monitor_id"]
+        )
+        session.add(client)
+    session.commit()
+    session.close()
+
+def add_one_sys_mon_client(clients):
+    """
+    Добавляет клиента в БД из системы мониторинга
+        marge["id_in_system_monitor"] = str(i["id"])
+        marge["name_in_system_monitor"] = str(i["name"])
+        marge["owner_id_sys_mon"] = str(i["owner"])
+        marge["system_monitor_id"] = 1
+
+    """
+    sys_id = clients[10]["system_monitor_id"]
+    session = Database().session
+    clients_in_db = session.query(models.ClientsInSystemMonitor.id_in_system_monitor, models.ClientsInSystemMonitor.system_monitor_id).filter(
+        models.ClientsInSystemMonitor.system_monitor_id == sys_id,
+    )
+    all_id_from_db = set()
+    for i in clients_in_db:
+        all_id_from_db.add(i[0])
+
+    for item in clients:
+        if item["id_in_system_monitor"] not in all_id_from_db:
+            client = models.ClientsInSystemMonitor(
+                id_in_system_monitor=item["id_in_system_monitor"],
+                name_in_system_monitor=item["name_in_system_monitor"],
+                owner_id_sys_mon=item["owner_id_sys_mon"],
+                system_monitor_id=item["system_monitor_id"]
+            )
+            session.add(client)
+    session.commit()
+    session.close()
+
+def update_one_sys_mon_client(clients):
+    """
+    Обновляет один клиент в БД
+    Сравнивает в бд:
+    1. По системе мониторинга
+    2. По id клиента в системе мониторинга
+    Принимает словарь вида:
+            "id_in_system_monitor": "123",
+            "name_in_system_monitor": "123",
+            "owner_id_sys_mon": "123",
+            "system_monitor_id": 1
+    """
+    sys_id = clients[10]["system_monitor_id"]
+    session = Database().session
+    clients_in_db = session.query(models.ClientsInSystemMonitor).filter(
+        models.ClientsInSystemMonitor.system_monitor_id == sys_id        
+    )
+    for i in clients:
+        for e in clients_in_db:
+            if i["id_in_system_monitor"] == e.id_in_system_monitor:
+                if i["name_in_system_monitor"] != e.name_in_system_monitor:
+                    session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(name_in_system_monitor = i["name_in_system_monitor"]))
+                if i["owner_id_sys_mon"] != e.owner_id_sys_mon:
+                    session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(owner_id_sys_mon = i["owner_id_sys_mon"]))
+    session.commit()
+    session.close()
+

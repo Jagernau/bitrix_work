@@ -6,6 +6,7 @@ from data_entry import (
         merge_scout_data,
         merge_era_data,
         get_postgre_clients,
+        generate_glonass_client,
         )
 
 from database.crud import (
@@ -14,22 +15,25 @@ from database.crud import (
         delete_one_object,
         update_one_object,
         add_clients_postgre,
-
+        add_sys_mon_clients,
+        add_one_sys_mon_client,
         )
 import schedule
 import time
 
 
 def job():
-    add_objects(merge_glonasssoft_data())
-    add_objects(merge_fort_data())
-    add_objects(merge_wialon_host_data())
-    add_objects(merge_wialon_local_data())
-    add_objects(merge_scout_data())
-    add_objects(merge_era_data())
-    #add_one_object(merge_glonasssoft_data())
-    #update_one_object(merge_glonasssoft_data())
-#    add_clients_postgre(get_postgre_clients())
+    # add_objects(merge_glonasssoft_data())
+    # add_objects(merge_fort_data())
+    # add_objects(merge_wialon_host_data())
+    # add_objects(merge_wialon_local_data())
+    # add_objects(merge_scout_data())
+    # add_objects(merge_era_data())
+    # add_one_object(merge_glonasssoft_data())
+    # update_one_object(merge_glonasssoft_data())
+    # add_clients_postgre(get_postgre_clients())
+    #add_sys_mon_clients(generate_glonass_client())
+    add_one_sys_mon_client(generate_glonass_client())
 
 
 if __name__ == '__main__':

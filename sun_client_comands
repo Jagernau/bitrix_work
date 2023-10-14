@@ -8,6 +8,7 @@ import json
 from data_entry import (
     get_postgre_clients,
     create_glonass_client,
+    update_glonass_client,
 
 )
 
@@ -21,7 +22,7 @@ from data_entry import (
         Какую команду использовать: \n
         get_postgres_clients_json - Показать json клиентов базы данных postgres\n 
         create_client - создаёт клиента в системе мониторинга \n
-        ... \n
+        update_client - изменяет клиента в системе мониторинга \n
         """
         )
 @click.option(
@@ -50,6 +51,17 @@ from data_entry import (
             "inn": inn,
             "kpp": kpp,
         } \n
+        Значения для update_client: \n
+        принимает json клиента \n
+        {
+            "agentId": agent_id
+            "parentId": parent_id, пока не надо
+            "name": name,
+            "fullName": full_name,
+            ---"inn": inn,
+            ---"kpp": kpp,
+
+        }
         """
         )
 
@@ -64,6 +76,13 @@ def main(comand, monitor, value):
         if monitor == "glonass":
             glonass_client = create_glonass_client(json.loads(value))
             print(glonass_client)
+
+    if comand == "update_client":
+        if monitor == "glonass":
+            glonass_client = update_glonass_client(json.loads(value))
+            print(glonass_client)
+
+
 
 if __name__ == "__main__":
     main()

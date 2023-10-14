@@ -124,9 +124,47 @@ class Glonasssoft:
         }
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
-            return "Client added successfully."
+            return response.json()
         else:
             return f"Failed to add client. Error:  {response.text}"
+
+
+
+    @staticmethod
+    def update_client(*ars, **kwargs):
+        url = "https://hosting.glonasssoft.ru/api/v3/agents"
+        headers = {
+            "X-Auth": kwargs["token"]
+        }
+        data = {
+            "agentId": kwargs["agentId"],
+            "parentId": kwargs["parentId"],
+            "name": kwargs["name"],
+            "fullName": kwargs["fullName"],
+            #"agentInfoType": 0,
+            #"isForeign": False,
+            #"district": "",
+            #"region": "",
+            #"city": "",
+            #"inn": kwargs["inn"],
+            #"kpp": kwargs["kpp"],
+            #"address": "",
+            #"addressFact": "",
+            #"email": "",
+            #"director": "",
+            #"bankName": "",
+            #"bankBIK": "",
+            #"bankRS": "",
+            #"bankKS": ""
+        }
+        response = requests.put(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Failed to update client. Error:  {response.text}"
+
+
+
 
 
 class Fort:

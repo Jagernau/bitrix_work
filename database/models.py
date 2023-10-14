@@ -138,8 +138,9 @@ class ClientsInSystemMonitor(Base):
     __tablename__ = 'clients_in_system_monitor'
 
     id = Column(Integer, primary_key=True)
-    id_in_system_monitor = Column(String(200, 'utf8mb3_unicode_ci'))
-    name_in_system_monitor = Column(String(200, 'utf8mb3_unicode_ci'))
+    id_in_system_monitor = Column(VARCHAR(200), comment='Id клиента в системе мониторинга')
+    name_in_system_monitor = Column(VARCHAR(200), comment='Имя клиента в системе мониторинга ')
+    owner_id_sys_mon = Column(VARCHAR(200), comment='Id хозяина в системе мониторинга')
     system_monitor_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Id системы мониторинга ')
     client_id = Column(ForeignKey('Contragents.ca_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='id клиента')
 
