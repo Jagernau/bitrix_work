@@ -9,7 +9,12 @@ from data_entry import (
     get_postgre_clients,
     create_glonass_client,
     update_glonass_client,
-
+    generate_glonass_client
+)
+from database.crud import (
+   add_sys_mon_clients,
+   add_one_sys_mon_client,
+   update_one_sys_mon_client,
 )
 
 
@@ -21,6 +26,7 @@ from data_entry import (
         type=str, help=""" 
         Какую команду использовать: \n
         get_postgres_clients_json - Показать json клиентов базы данных postgres\n 
+        crud_client_db - Работа с клиентами в базе данных mysql из систем мониторинга \n
         create_client - создаёт клиента в системе мониторинга \n
         update_client - изменяет клиента в системе мониторинга \n
         """
@@ -42,6 +48,13 @@ from data_entry import (
         "-v", "--value", "value", 
         default=None, 
         type=str, help=""" 
+        Значения для crud_client_db: \n
+       
+        add_all_clients - Загрузить все сведённые объекты в бд из парсера\n 
+        rec_add_one_client - Рекрусивно добавить объект в бд из парсера\n 
+        rec_del_one_client - Рекрусивно удалить объект из бд которого нет из парсера \n 
+        rec_upd_one_client - Рекрусивно обновить по объектно из парсера \n
+
         Значения для create_client: \n
         принимает json клиента \n
         {
@@ -81,6 +94,10 @@ def main(comand, monitor, value):
         if monitor == "glonass":
             glonass_client = update_glonass_client(json.loads(value))
             print(glonass_client)
+
+    if comand == "crud_client_db":
+        if monitor == "glonass":
+            pass
 
 
 
