@@ -10,7 +10,9 @@ from data_entry import (
         merge_wialon_host_data,
         merge_wialon_local_data,
         merge_scout_data,
-        merge_era_data
+        merge_era_data,
+        create_glonass_object,
+
         )
 from database.crud import (
         add_objects,
@@ -18,7 +20,7 @@ from database.crud import (
         delete_one_object,
         update_one_object,
         )
-
+import json
 
 
 @click.command()
@@ -29,7 +31,7 @@ from database.crud import (
         Какую команду использовать: \n
         get_json - Показать json \n 
         crud_objects - Работа с объектами(добавить из парсера в бд, удалить из бд, обновить в бд) \n
-        4 - ... \n
+        create_object \n
         """
         )
 @click.option(
@@ -59,6 +61,18 @@ from database.crud import (
         rec_add_one_obj - Рекрусивно добавить объекты в бд из системы мониторинга\n 
         rec_del_one_obj - Рекрусивно удалить объекты из бд которых нет в системе мониторинга но есть в бд \n 
         rec_upd_one_obj - Рекрусивно обновить все объекты в бд в соответстии с системой мониторинга. \n
+
+        Значения для create_object: \n
+        Принимает json объекта \n
+        {
+            "parentId": kwargs["parentId"],
+            "name": kwargs["name"],
+            "imei": kwargs["imei"],
+            "deviceTypeId": kwargs["deviceTypeId"],
+            "modelId": kwargs["modelId"],
+            "unitId": kwargs["unitId"],
+            "sim1": kwargs["sim1"],
+        }
         """
         )
 def main(comand, monitor, value):
@@ -196,6 +210,13 @@ def main(comand, monitor, value):
                     delete_one_object(merge_era_data())
                 if value == "rec_upd_one_obj":
                     update_one_object(merge_era_data())
+
+        if comand == "create_object":
+            if monitor == "glonass":
+               glonass_object =  create_glonass_object(json.loads(value))
+               print(glonass_object)
+
+        
                 
     else:
         print("Неуказана команда")

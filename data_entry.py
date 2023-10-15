@@ -216,6 +216,37 @@ def merge_era_data():
         result.append(marge)
     return result
 
+
+def create_glonass_object(json_data):
+    """" 
+    Добавить объект в систему мониторинга глонасс
+    :param json_data:
+        "parentId": "" ,  // ID клиента
+        "name": "" ,  // имя ТС
+        "imei": "" ,  // IMEI
+        "deviceTypeId": "" ,  // ID типа устройства
+        "modelId": "" , // ID модели
+        "unitId": "" ,  // ID подразделения
+        "sim1": "" ,  // Номер SIM 1
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    object_ = glonasssoft.add_object(
+            token=token,
+            parentId=json_data["parentId"],
+            name=json_data["name"],
+            imei=json_data["imei"],
+            deviceTypeId=json_data["deviceTypeId"],
+            modelId=json_data["modelId"],
+            unitId=json_data["unitId"],
+            sim1=json_data["sim1"]
+    )
+    return object_
+
+
+
 ###############################################
 # CLIENTS
 ###############################################
