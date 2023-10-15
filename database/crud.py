@@ -5,6 +5,9 @@ from datetime import datetime
 
 
 
+###############################################
+# Объекты в бд
+################################################
 
 def add_objects(marge_data: list):
     """ 
@@ -44,7 +47,7 @@ def add_objects(marge_data: list):
 
 def add_one_object(marge_data: list):
     """ 
-    Добавляет один объект в БД
+    Рекрусивно проверяет бд, если нет такого объекта в бд как в системе мониторинга, добавляет его в базу данных.
     Сравнивает в бд:
     1. По системе мониторинга
     2. По id объекта в системе мониторинга
@@ -93,7 +96,7 @@ def add_one_object(marge_data: list):
 
 def delete_one_object(marge_data: list):
     """
-    Удаляет один объект из БД
+    Удаляет один объект из БД, если его нет в системе мониторинга
     Сравнивает в бд:
     1. По системе мониторинга
     2. По id объекта в системе мониторинга
@@ -123,13 +126,13 @@ def delete_one_object(marge_data: list):
         all_id_from_sysmon.add(item["id_in_system"])
     for id_ in all_id_from_db:
         if id_ not in all_id_from_sysmon:
-            session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_).delete()
+            session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).delete()
     session.commit()
     session.close()
 
 def update_one_object(marge_data: list):
     """
-    Обновляет один объект в БД
+    Обновляет один объект в БД, если произошли изменения в системе мониторинга
     Сравнивает в бд:
     1. По системе мониторинга
     2. По id объекта в системе мониторинга
@@ -187,7 +190,7 @@ def update_one_object(marge_data: list):
 
 def add_clients_postgre(clients):
     """
-    Добавляет клиентов в БД
+    Добавляет клиентов в БД из API на Postgre
       "name": "Венета ООО",
       "shortname": " ООО Венета",
       "type": "Юридическое лицо",
@@ -211,7 +214,7 @@ def add_clients_postgre(clients):
 
 def add_sys_mon_clients(clients):
     """
-    Добавляет клиентов в БД из системы мониторинга
+    Массово добавляет клиентов в БД из системы мониторинга
         marge["id_in_system_monitor"] = str(i["id"])
         marge["name_in_system_monitor"] = str(i["name"])
         marge["owner_id_sys_mon"] = str(i["owner"])
@@ -232,7 +235,7 @@ def add_sys_mon_clients(clients):
 
 def add_one_sys_mon_client(clients):
     """
-    Добавляет клиента в БД из системы мониторинга
+    Рекрусивно проверяет и Добавляет клиентов в бд если их не было в соответствии с системой мониторинга
         marge["id_in_system_monitor"] = str(i["id"])
         marge["name_in_system_monitor"] = str(i["name"])
         marge["owner_id_sys_mon"] = str(i["owner"])
@@ -262,7 +265,7 @@ def add_one_sys_mon_client(clients):
 
 def update_one_sys_mon_client(clients):
     """
-    Обновляет один клиент в БД
+    Рекрусивно обновляет клиентов в бд в соответствии с системой мониторинга
     Сравнивает в бд:
     1. По системе мониторинга
     2. По id клиента в системе мониторинга
@@ -286,4 +289,40 @@ def update_one_sys_mon_client(clients):
                     session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(owner_id_sys_mon = i["owner_id_sys_mon"]))
     session.commit()
     session.close()
+
+def delete_one_sys_mon_client(clients):
+    """
+    Удаляет клиентов из бд в соответствии с системой мониторинга
+    Сравнивает в бд:
+    1. По системе мониторинга
+    2. По id клиента в системе мониторинга
+    Принимает словарь вида:
+            "id_in_system_monitor": "123",
+            "name_in_system_monitor": "123",
+            "owner_id_sys_mon": "123",
+            "system_monitor_id": 1
+    """
+    sys_id = clients[10]["system_monitor_id"]
+    session = Database().session
+    clients_in_db = session.query(models.ClientsInSystemMonitor.id_in_system_monitor, models.ClientsInSystemMonitor.system_monitor_id).filter(
+        models.ClientsInSystemMonitor.system_monitor_id == sys_id        
+    )
+    all_id_from_db = set()
+    for i in clients_in_db:
+        all_id_from_db.add(i[0])
+    all_id_from_sys_mon = set()
+    for i in clients:
+        all_id_from_sys_mon.add(i["id_in_system_monitor"])
+    for id_ in all_id_from_db:
+        if id_ not in all_id_from_sys_mon:
+            session.query(models.ClientsInSystemMonitor).filter(models.ClientsInSystemMonitor.id_in_system_monitor == id_).filter(models.ClientsInSystemMonitor.system_monitor_id == sys_id).delete()
+    session.commit()
+    session.close()
+
+
+
+    
+
+
+                
 

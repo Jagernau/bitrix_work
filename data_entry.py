@@ -225,10 +225,10 @@ def get_postgre_clients():
     clients = sun.get_clients()
     return clients
 
-
+# Glonass
 def create_glonass_client(json_data):
     """"
-    Создание клиента в системе мониторинга глонасс
+    Добавить клиента в систему мониторинга глонасс
     :param json_data:
     :return:
     """
@@ -248,7 +248,7 @@ def create_glonass_client(json_data):
 
 def generate_glonass_client():
     """"
-    Генерация клиентов для базы данных mysql
+    Массовое получение всех клиентов из системы мониторинга глонасс
     :return:
     """
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
@@ -268,7 +268,7 @@ def generate_glonass_client():
 
 def update_glonass_client(json_data):
     """"
-    Обновление клиента
+    Обновление клиента в системе мониторинга глонасс
     :param json_data:
     :return:
     """

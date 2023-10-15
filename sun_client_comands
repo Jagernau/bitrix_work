@@ -15,6 +15,7 @@ from database.crud import (
    add_sys_mon_clients,
    add_one_sys_mon_client,
    update_one_sys_mon_client,
+   delete_one_sys_mon_client,
 )
 
 
@@ -50,12 +51,12 @@ from database.crud import (
         type=str, help=""" 
         Значения для crud_client_db: \n
        
-        add_all_clients - Загрузить все сведённые объекты в бд из парсера\n 
-        rec_add_one_client - Рекрусивно добавить объект в бд из парсера\n 
-        rec_del_one_client - Рекрусивно удалить объект из бд которого нет из парсера \n 
-        rec_upd_one_client - Рекрусивно обновить по объектно из парсера \n
+        add_all_clients - Загрузить всех  клиентов в бд(таблицу clients_in_system_monitor) из системы мониторинга. \n 
+        rec_add_one_client - Рекрусивно добавить клиентов в бд из системы мониторинга. \n 
+        rec_del_one_client - Рекрусивно удалить клиентов из бд которого нет в системе мониторинга \n 
+        rec_upd_one_client - Рекрусивно обновить клиентов в соответсвии данным из системы мониторинга \n
 
-        Значения для create_client: \n
+        Value для create_client: \n
         принимает json клиента \n
         {
             "parentId": parent_id, Сантел: "80eb1587-12cf-44d4-b0d0-c09b7ddf6110"
@@ -64,7 +65,7 @@ from database.crud import (
             "inn": inn,
             "kpp": kpp,
         } \n
-        Значения для update_client: \n
+        Value для update_client: \n
         принимает json клиента \n
         {
             "agentId": agent_id
@@ -97,8 +98,18 @@ def main(comand, monitor, value):
 
     if comand == "crud_client_db":
         if monitor == "glonass":
-            pass
-
+            if value == "add_all_clients":
+                clients = generate_glonass_client()
+                add_sys_mon_clients(clients)
+            if value == "rec_add_one_client":
+                clients = generate_glonass_client()
+                add_one_sys_mon_client(clients)
+            if value == "rec_del_one_client":
+                clients = generate_glonass_client()
+                delete_one_sys_mon_client(clients)
+            if value == "rec_upd_one_client":
+                clients = generate_glonass_client()
+                update_one_sys_mon_client(clients)
 
 
 if __name__ == "__main__":
