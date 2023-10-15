@@ -70,7 +70,7 @@ import json
             "imei": kwargs["imei"],
             "deviceTypeId": kwargs["deviceTypeId"],
             "modelId": kwargs["modelId"],
-            "unitId": kwargs["unitId"],
+            --"unitId": kwargs["unitId"],
             "sim1": kwargs["sim1"],
         }
         """

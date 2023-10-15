@@ -172,7 +172,7 @@ class Glonasssoft:
         imei: str
         deviceTypeId: str
         modelId: str
-        unitId: str
+        --unitId: str
         sim1: str
         """
         url = "https://hosting.glonasssoft.ru/api/v3/vehicles"
@@ -185,7 +185,7 @@ class Glonasssoft:
                     "imei": kwargs["imei"],
                     "deviceTypeId": kwargs["deviceTypeId"],
                     "modelId": kwargs["modelId"],
-                    "unitId": kwargs["unitId"],
+                    #"unitId": kwargs["unitId"],
                     "sim1": kwargs["sim1"],
                     }
         response = requests.post(url, headers=headers, json=data)

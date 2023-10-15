@@ -226,7 +226,7 @@ def create_glonass_object(json_data):
         "imei": "" ,  // IMEI
         "deviceTypeId": "" ,  // ID типа устройства
         "modelId": "" , // ID модели
-        "unitId": "" ,  // ID подразделения
+        ---"unitId": "" ,  // ID подразделения
         "sim1": "" ,  // Номер SIM 1
     :return:
     """
@@ -240,7 +240,7 @@ def create_glonass_object(json_data):
             imei=json_data["imei"],
             deviceTypeId=json_data["deviceTypeId"],
             modelId=json_data["modelId"],
-            unitId=json_data["unitId"],
+            #unitId=json_data["unitId"],
             sim1=json_data["sim1"]
     )
     return object_
