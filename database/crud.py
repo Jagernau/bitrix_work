@@ -320,9 +320,16 @@ def delete_one_sys_mon_client(clients):
     session.close()
 
 
+###################
+# Users in db 
+###################
 
+def get_db_users_from_sysem(system_id: int):
+    session = Database().session
+    users = session.query(models.LoginUser.system_id, models.LoginUser.login, models.LoginUser.client_name).filter(models.LoginUser.system_id == system_id).all()
+    session.close()
+    return users
     
 
 
                 
-

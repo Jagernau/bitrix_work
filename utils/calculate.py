@@ -112,3 +112,9 @@ def generate_era_user(group_id, users):
             return user.login
 
 
+
+def generate_client_from_user(user_sysmon, users_in_db):
+    for i in users_in_db:
+        if user_sysmon == i[1]:
+            return i[2]
+

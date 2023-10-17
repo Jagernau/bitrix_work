@@ -296,6 +296,28 @@ class Fort:
             return None
 
 
+    @staticmethod
+    def create_company(token, **kwargs):
+        url = f'https://fm.suntel-nn.ru/api/integration/v1/companies'
+        data = {
+                'id': int(kwargs["id"]),
+                'name': str(kwargs["name"]),
+                "description": str(kwargs["description"]),
+                "maxObjectsCount": int(10),
+                "smsSenderName": "",
+                "addDataStoreMonths": int(3),
+                "addDeletedStoreDays": int(20),
+                "timezone": "Europe/Moscow",
+        }
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Failed to add object. Error:  {response.text}"
+
+
+
 def get_wialin_host_units_users(token: str):
     sdk = WialonSdk(
       is_development=True,

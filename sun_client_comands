@@ -9,7 +9,8 @@ from data_entry import (
     get_postgre_clients,
     create_glonass_client,
     update_glonass_client,
-    generate_glonass_client
+    generate_glonass_client,
+    create_fort_client,
 )
 from database.crud import (
    add_sys_mon_clients,
@@ -58,22 +59,30 @@ from database.crud import (
 
         Value для create_client: \n
         принимает json клиента \n
+        glonass: \n
         {
-            "parentId": parent_id, Сантел: "80eb1587-12cf-44d4-b0d0-c09b7ddf6110"
-            "name": name,
-            "fullName": full_name,
-            "inn": inn,
-            "kpp": kpp,
+            "parentId": "80eb1587-12cf-44d4-b0d0-c09b7ddf6110"
+            "name": "",
+            "fullName": "",
+            "inn": "",
+            "kpp": "",
         } \n
+        fort: \n
+        {
+            'id': int,
+            'name': str,
+            "description": str,
+        }
+
         Value для update_client: \n
         принимает json клиента \n
         {
-            "agentId": agent_id
-            "parentId": parent_id, пока не надо
+            "agentId": "",
+            "parentId": ""
             "name": name,
-            "fullName": full_name,
-            ---"inn": inn,
-            ---"kpp": kpp,
+            "fullName": "",
+            ---"inn": "",
+            ---"kpp": "",
 
         }
         """
@@ -90,6 +99,9 @@ def main(comand, monitor, value):
         if monitor == "glonass":
             glonass_client = create_glonass_client(json.loads(value))
             print(glonass_client)
+        if monitor == "fort":
+            fort_client = create_fort_client(json.loads(value))
+            print(fort_client)
 
     if comand == "update_client":
         if monitor == "glonass":

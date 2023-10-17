@@ -23,8 +23,12 @@ from utils.calculate import (
         get_wialon_user, 
         generate_scout_user, 
         generate_era_company,
-        generate_era_user
-        )
+        generate_era_user,
+        generate_client_from_user
+)
+from database.crud import get_db_users_from_sysem
+
+
 
 import emoji
 import json
@@ -106,6 +110,9 @@ def merge_fort_data():
 
 
 def merge_wialon_host_data():
+    
+    wialon_host_db_users = get_db_users_from_sysem(3)
+    
     wialon_data = get_wialin_host_units_users(str(config.WIALON_HOST_TOKEN))
     units = wialon_data[0]["items"]
     users = wialon_data[1]["items"]
@@ -118,10 +125,14 @@ def merge_wialon_host_data():
             marge["imei"] = get_wialon_imei(i["flds"])
         else:
             marge["imei"] = None
-        if get_wialon_agent(i["flds"]) != None:
-            marge["owner_agent"] = get_wialon_agent(i["flds"])
-        else:
-            marge["owner_agent"] = None
+        # if get_wialon_agent(i["flds"]) != None:
+        #     marge["owner_agent"] = get_wialon_agent(i["flds"])
+        # else:
+        #     marge["owner_agent"] = None
+        marge["owner_agent"] = generate_client_from_user(
+                get_wialon_user(i["crt"], users),
+                wialon_host_db_users
+                )
         marge["created"] = None
         marge["updated"] = None
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
@@ -137,6 +148,9 @@ def merge_wialon_host_data():
 
 
 def merge_wialon_local_data():
+    
+    wialon_local_db_users = get_db_users_from_sysem(4)
+
     wialon_data = get_wialin_local_units_users(str(config.WIALON_LOCAL_TOKEN))
     units = wialon_data[0]["items"]
     users = wialon_data[1]["items"]
@@ -149,10 +163,14 @@ def merge_wialon_local_data():
             marge["imei"] = get_wialon_imei(i["flds"])
         else:
             marge["imei"] = None
-        if get_wialon_agent(i["flds"]) != None:
-            marge["owner_agent"] = get_wialon_agent(i["flds"])
-        else:
-            marge["owner_agent"] = None
+        # if get_wialon_agent(i["flds"]) != None:
+        #     marge["owner_agent"] = get_wialon_agent(i["flds"])
+        # else:
+        #     marge["owner_agent"] = None
+        marge["owner_agent"] = generate_client_from_user(
+                get_wialon_user(i["crt"], users),
+                wialon_local_db_users
+        )
         marge["created"] = None
         marge["updated"] = None
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
@@ -317,4 +335,45 @@ def update_glonass_client(json_data):
             )
 
     return client
+
+
+# Fort
+
+def generate_fort_companys():
+    """"
+    Массовое получение всех клиентов из системы мониторинга форт
+    :return:
+    """
+    fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
+    token = str(fort.token)
+    time.sleep(2)
+    client = fort.get_fort_companies(token=token)["companies"]
+    result = []
+    for i in client:
+        marge = {}
+        marge["id_in_system_monitor"] = str(i["id"])
+        marge["name_in_system_monitor"] = str(i["name"])
+        marge["owner_id_sys_mon"] = None
+        marge["system_monitor_id"] = 2
+        result.append(marge)
+    return result
+
+
+def create_fort_client(json_data):
+    """"
+    Добавить клиента в систему мониторинга глонасс
+    :param json_data:
+    :return:
+    """
+    fort = Fort(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(fort.token)
+    time.sleep(2)
+    client = fort.create_company(
+            token=token, 
+            id=json_data["id"],
+            name=json_data["name"],
+            description=json_data["description"],
+            )
+    return client
+
 
