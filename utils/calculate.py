@@ -48,7 +48,7 @@ def get_fort_company(obj_group_id:int, companies: list, grops_companies):
 
 def get_fort_company_group(obj_group_id:int, grops_companies):
     for group_company in grops_companies:
-        if group_company["companyId"] == obj_group_id:
+        if group_company["id"] == obj_group_id:
             return group_company["name"]
 
 

@@ -30,6 +30,8 @@ def job():
     # add_objects(merge_wialon_local_data())
     # add_objects(merge_scout_data())
     # add_objects(merge_era_data())
+
+
     add_one_object(merge_glonasssoft_data())
     add_one_object(merge_fort_data())
     add_one_object(merge_wialon_local_data())
