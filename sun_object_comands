@@ -12,6 +12,7 @@ from data_entry import (
         merge_scout_data,
         merge_era_data,
         create_glonass_object,
+        create_whost_object,
 
         )
 from database.crud import (
@@ -63,6 +64,7 @@ import json
         rec_upd_one_obj - Рекрусивно обновить все объекты в бд в соответстии с системой мониторинга. \n
 
         Значения для create_object: \n
+        Для glonass: \n
         Принимает json объекта \n
         {
             "parentId": kwargs["parentId"],
@@ -73,6 +75,15 @@ import json
             --"unitId": kwargs["unitId"],
             "sim1": kwargs["sim1"],
         }
+        для whost: \n
+        Принимает json объекта \n
+        {
+            "creatorId": "",
+            "name": "",
+            "hwTypeId": "", тип терминала int
+ 
+        }
+
         """
         )
 def main(comand, monitor, value):
@@ -215,6 +226,9 @@ def main(comand, monitor, value):
             if monitor == "glonass":
                glonass_object =  create_glonass_object(json.loads(value))
                print(glonass_object)
+            if monitor == "whost":
+               whost_object =  create_whost_object(json.loads(value))
+               print(whost_object)
 
         
                 

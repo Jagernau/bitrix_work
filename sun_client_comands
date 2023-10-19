@@ -11,6 +11,7 @@ from data_entry import (
     update_glonass_client,
     generate_glonass_client,
     create_fort_client,
+    create_wialon_host_users
 )
 from database.crud import (
    add_sys_mon_clients,
@@ -73,6 +74,12 @@ from database.crud import (
             'name': str,
             "description": str,
         }
+        whost: \n
+        {
+            "creatorId": ""
+            "name": "",
+            "password": "",
+        }
 
         Value для update_client: \n
         принимает json клиента \n
@@ -102,6 +109,9 @@ def main(comand, monitor, value):
         if monitor == "fort":
             fort_client = create_fort_client(json.loads(value))
             print(fort_client)
+        if monitor == "whost":
+            wialon_host_client = create_wialon_host_users(json.loads(value))
+            print(wialon_host_client)
 
     if comand == "update_client":
         if monitor == "glonass":

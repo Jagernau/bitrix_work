@@ -298,21 +298,21 @@ class Fort:
 
     @staticmethod
     def create_company(token, **kwargs):
-        url = f'https://fm.suntel-nn.ru/api/integration/v1/companies'
+        url = 'https://fm.suntel-nn.ru/api/integration/v1/companies'
         data = {
-                'id': int(kwargs["id"]),
+                'id': str(kwargs["id"]),
                 'name': str(kwargs["name"]),
                 "description": str(kwargs["description"]),
                 "maxObjectsCount": int(10),
-                "smsSenderName": "",
+                "smsSenderName": "string",
                 "addDataStoreMonths": int(3),
                 "addDeletedStoreDays": int(20),
                 "timezone": "Europe/Moscow",
         }
         headers = {'Content-type': 'application/json', 'Accept': 'application/json', "SessionId": token}
-        response = requests.post(url, json=data, headers=headers)
+        response = requests.post(url, json=json.dumps(data), headers=headers)
         if response.status_code == 200:
-            return response.json()
+            return response.text
         else:
             return f"Failed to add object. Error:  {response.text}"
 
@@ -361,7 +361,53 @@ def get_wialin_host_units_users(token: str):
     sdk.logout()
     return [units, users]
 
+def create_wialon_host_user(token, **kwargs):
+    sdk = WialonSdk(
+      is_development=True,
+      scheme='https',
+      host='hst-api.wialon.com',
+      port=0,
+      session_id='',
+      extra_params=""
+    )
 
+    resp = sdk.login(str(token))
+    parameters_user = {
+            "creatorId": int(kwargs["creatorId"]),
+            "name": str(kwargs["name"]),
+            "password": str(kwargs["password"]),
+            "dataFlags": 1,
+    }
+    user = sdk.core_create_user(parameters_user)
+    sdk.logout()
+    return user
+
+
+def create_wialon_host_unit(token, **kwargs):
+    sdk = WialonSdk(
+      is_development=True,
+      scheme='https',
+      host='hst-api.wialon.com',
+      port=0,
+      session_id='',
+      extra_params=""
+    )
+
+    resp = sdk.login(str(token))
+    parameters_unit = {
+            "creatorId": int(kwargs["creatorId"]),
+            "name": str(kwargs["name"]),
+            "hwTypeId": int(kwargs["hwTypeId"]),
+            "dataFlags": 1,
+    }
+    unit = sdk.core_create_unit(parameters_unit)
+    sdk.logout()
+    return unit
+
+
+
+
+# Local
 def get_wialin_local_units_users(token: str):
     sdk = WialonSdk(
       is_development=True,

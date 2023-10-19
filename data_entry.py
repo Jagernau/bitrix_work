@@ -6,7 +6,8 @@ from parser.classes import (
         Scout, 
         get_era_data,
         SunPostgres,
-
+        create_wialon_host_user,
+        create_wialon_host_unit,
 
         )
 from configurations import config
@@ -365,7 +366,7 @@ def create_fort_client(json_data):
     :param json_data:
     :return:
     """
-    fort = Fort(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
     token = str(fort.token)
     time.sleep(2)
     client = fort.create_company(
@@ -377,3 +378,36 @@ def create_fort_client(json_data):
     return client
 
 
+# Wialon host
+
+def create_wialon_host_users(json_data):
+    """"
+    Добавить клиента в систему мониторинга глонасс
+    :param json_data:
+    :return:
+    """
+    token = str(config.WIALON_HOST_TOKEN)
+    time.sleep(2)
+    client = create_wialon_host_user(
+            token=token, 
+            creatorId=json_data["creatorId"],
+            name=json_data["name"],
+            password=json_data["password"],
+            )
+    return client
+
+def create_whost_object(json_data):
+    """"
+    Добавить объект в систему мониторинга глонасс
+    :param json_data:
+    :return:
+    """
+    token = str(config.WIALON_HOST_TOKEN)
+    time.sleep(2)
+    client = create_wialon_host_unit(
+            token=token, 
+            creatorId=json_data["creatorId"],
+            name=json_data["name"],
+            hwTypeId=json_data["hwTypeId"],
+            )
+    return client
