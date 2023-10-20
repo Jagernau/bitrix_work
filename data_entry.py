@@ -33,22 +33,11 @@ from database.crud import get_db_users_from_sysem
 
 import emoji
 import json
-"""
-    API on vehicles, agents, and users.
 
-    Returns:
-    A list of dictionaries containing information on each vehicle. Each dictionary contains the following keys:
-    - `id_in_system`: The ID of the vehicle in the Glonasssoft system.
-    - `name`: The name of the vehicle.
-    - `imei`: The IMEI number of the vehicle.
-    - `owner_agent`: The name of the agent that owns the vehicle.
-    - `created`: The date and time the vehicle was created.
-    - `updated`: The date and time the vehicle was last updated.
-    - `add_date`: The date and time the vehicle was added to the system.
-    - `monitor_sys_id`: The ID of the monitoring system.
-    - `object_status_id`: The status of the vehicle.
-    - `user`: The user associated with the vehicle.
-"""
+
+############################
+# GET FULL DATA FROM OBJECTS
+############################
 
 def merge_glonasssoft_data():
     glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
@@ -236,6 +225,36 @@ def merge_era_data():
     return result
 
 
+def get_postgre_clients():
+    sun = SunPostgres(str(config.SUNAPI_TOKEN))
+    clients = sun.get_clients()
+    return clients
+
+##########################################################
+# CREATE, UPDATE, DEL OBJECT
+##########################################################
+
+def create_glonass_model_object(json_data):
+    """" 
+    Добавить объект в систему мониторинга глонасс
+    :param json_data:
+          --"id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "parentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "name": "string",
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    object_model = glonasssoft.add_model_object(
+            token=token,
+            #id=json_data["id"],
+            parentId=json_data["parentId"],
+            name=json_data["name"],
+    )
+    return object_model
+
+
 def create_glonass_object(json_data):
     """" 
     Добавить объект в систему мониторинга глонасс
@@ -257,23 +276,38 @@ def create_glonass_object(json_data):
             parentId=json_data["parentId"],
             name=json_data["name"],
             imei=json_data["imei"],
-            deviceTypeId=json_data["deviceTypeId"],
+            deviceTypeId=int(json_data["deviceTypeId"]),
             modelId=json_data["modelId"],
             #unitId=json_data["unitId"],
             sim1=json_data["sim1"]
     )
     return object_
 
+# Whost
+
+def create_whost_object(json_data):
+    """"
+    Добавить объект в систему мониторинга глонасс
+    :param json_data:
+    :return:
+    """
+    token = str(config.WIALON_HOST_TOKEN)
+    time.sleep(2)
+    client = create_wialon_host_unit(
+            token=token, 
+            creatorId=json_data["creatorId"],
+            name=json_data["name"],
+            hwTypeId=json_data["hwTypeId"],
+            )
+    return client
+
+
 
 
 ###############################################
-# CLIENTS
+# CREATE, UPDATE, DELETE CLIENTS
 ###############################################
 
-def get_postgre_clients():
-    sun = SunPostgres(str(config.SUNAPI_TOKEN))
-    clients = sun.get_clients()
-    return clients
 
 # Glonass
 def create_glonass_client(json_data):
@@ -396,18 +430,4 @@ def create_wialon_host_users(json_data):
             )
     return client
 
-def create_whost_object(json_data):
-    """"
-    Добавить объект в систему мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    token = str(config.WIALON_HOST_TOKEN)
-    time.sleep(2)
-    client = create_wialon_host_unit(
-            token=token, 
-            creatorId=json_data["creatorId"],
-            name=json_data["name"],
-            hwTypeId=json_data["hwTypeId"],
-            )
-    return client
+

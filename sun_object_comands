@@ -3,7 +3,6 @@ import click
 from parser import classes
 from  configurations import config
 import time
-import os
 from data_entry import (
         merge_glonasssoft_data, 
         merge_fort_data, 
@@ -13,7 +12,7 @@ from data_entry import (
         merge_era_data,
         create_glonass_object,
         create_whost_object,
-
+        create_glonass_model_object,
         )
 from database.crud import (
         add_objects,
@@ -33,6 +32,7 @@ import json
         get_json - Показать json \n 
         crud_objects - Работа с объектами(добавить из парсера в бд, удалить из бд, обновить в бд) \n
         create_object \n
+        create_model_object (для Gsoft) \n 
         """
         )
 @click.option(
@@ -63,27 +63,19 @@ import json
         rec_del_one_obj - Рекрусивно удалить объекты из бд которых нет в системе мониторинга но есть в бд \n 
         rec_upd_one_obj - Рекрусивно обновить все объекты в бд в соответстии с системой мониторинга. \n
 
+        Значения для create_model_object: \n
+        Для glonass: \n
+        Принимает json объекта \n
+        '{"id": "id клиента", "parentId": "id клиента", "name": "имя"}'\a 
+
         Значения для create_object: \n
         Для glonass: \n
         Принимает json объекта \n
-        {
-            "parentId": kwargs["parentId"],
-            "name": kwargs["name"],
-            "imei": kwargs["imei"],
-            "deviceTypeId": kwargs["deviceTypeId"],
-            "modelId": kwargs["modelId"],
-            --"unitId": kwargs["unitId"],
-            "sim1": kwargs["sim1"],
-        }
-        для whost: \n
-        Принимает json объекта \n
-        {
-            "creatorId": "",
-            "name": "",
-            "hwTypeId": "", тип терминала int
- 
-        }
+        '{"parentId": "id длиент", "name": "имя", "imei": "ime", "deviceTypeId": 0, "modelId": "id модели объекта клиента","sim1": "симка"}' \n
 
+        Для whost: \n
+        Принимает json объекта \n
+        '{"creatorId": "id клиента", "name": "имя", "hwTypeId": 0}' \n
         """
         )
 def main(comand, monitor, value):
@@ -221,6 +213,12 @@ def main(comand, monitor, value):
                     delete_one_object(merge_era_data())
                 if value == "rec_upd_one_obj":
                     update_one_object(merge_era_data())
+
+        if comand == "create_model_object":
+            if monitor == "glonass":
+               glonass_model_object = create_glonass_model_object(json.loads(value))
+               print(glonass_model_object)
+            
 
         if comand == "create_object":
             if monitor == "glonass":

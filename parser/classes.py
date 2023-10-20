@@ -108,9 +108,9 @@ class Glonasssoft:
             "fullName": kwargs["fullName"],
             "agentInfoType": 0,
             "isForeign": False,
-            "district": "",
-            "region": "",
-            "city": "",
+            "district": "Россия",
+            "region": "Россия",
+            "city": "Нижний Новгород",
             "inn": kwargs["inn"],
             "kpp": kwargs["kpp"],
             "address": "",
@@ -162,6 +162,51 @@ class Glonasssoft:
             return response.json()
         else:
             return f"Failed to update client. Error:  {response.text}"
+
+    @staticmethod
+    def add_model_object(*ars, **kwargs):
+        """ 
+        Создание модели объекта под клиента
+          "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "parentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+          "deleted": true,
+          "extId": "string",
+          "name": "string",
+          "picture": "string",
+          "minspeed": 0,
+          "maxspeed": 0,
+          "width": 0,
+          "imbeddedtrailer": true,
+          "fueloutlay": 0,
+          "hoppercapacity": 0,
+          "hopperdischargespeed": 0,
+          "modelType": 0
+        """
+        url = "https://hosting.glonasssoft.ru/api/v3/models"
+        headers = {
+            "X-Auth": kwargs["token"]
+        }
+        data = {
+            #"id": kwargs["id"],
+            "parentId": kwargs["parentId"],
+            "deleted": True,
+            "extId": "",
+            "name": kwargs["name"],
+            "picture": "",
+            "minspeed": 3,
+            "maxspeed": 150,
+            "width": 5,
+            "imbeddedtrailer": True,
+            "fueloutlay": 0,
+            "hoppercapacity": 0,
+            "hopperdischargespeed": 0,
+            "modelType": 0
+        }
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Failed to add model object. Error:  {response.text}"
 
     @staticmethod
     def add_object(*ars, **kwargs):
