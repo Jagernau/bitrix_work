@@ -240,6 +240,37 @@ class Glonasssoft:
             return f"Failed to add object. Error:  {response.text}"
 
 
+    @staticmethod
+    def update_object(*ars, **kwargs):
+        """ 
+        Обновление объекта под клиента
+           "vehicleId": , // ID объекта
+            "parentId": "" ,  // ID клиента
+            "name": "" ,  // имя ТС
+            "imei": "" ,  // IMEI
+            "deviceTypeId": "" ,  // ID типа устройства
+            "modelId": "" , // ID модели
+            --"unitId": "" ,  // ID подразделения
+            "sim1": "" ,  // Номер SIM 1
+        """
+        url = "https://hosting.glonasssoft.ru/api/v3/vehicles"
+        headers = {
+            "X-Auth": kwargs["token"]
+        }
+        data = {
+                    "vehicleId": int(kwargs["vehicleId"]),
+                    "parentId": kwargs["parentId"],
+                    "name": kwargs["name"],
+                    "imei": kwargs["imei"],
+                    "deviceTypeId": kwargs["deviceTypeId"],
+                    "modelId": kwargs["modelId"],
+                    "sim1": kwargs["sim1"],
+                    }
+        response = requests.put(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Failed to update object. Error:  {response.text}"
 
 
 

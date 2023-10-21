@@ -52,7 +52,7 @@ def merge_glonasssoft_data():
     result = []
     for i in vehicles:
         marge = {}
-        marge["id_in_system"] = i["id"]
+        marge["id_in_system"] = i["vehicleId"]
         marge["name"] = i["number"]
         marge["imei"] = i["imei"]
         marge["owner_agent"] = [agent["name"] for agent in agents if i["owner"] in agent["id"]][0]
@@ -282,6 +282,37 @@ def create_glonass_object(json_data):
             sim1=json_data["sim1"]
     )
     return object_
+
+
+def update_glonass_object(json_data):
+    """ 
+    Обновить объект в системе мониторинга глонасс
+    :param json_data:
+           "vehicleId": , // ID объекта
+            "parentId": "" ,  // ID клиента
+            "name": "" ,  // имя ТС
+            "imei": "" ,  // IMEI
+            "deviceTypeId": "" ,  // ID типа устройства
+            --"modelId": "" , // ID модели
+            --"unitId": "" ,  // ID подразделения
+            "sim1": "" ,  // Номер SIM 1
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    object_ = glonasssoft.update_object(
+            token=token,
+            vehicleId=json_data["vehicleId"],
+            parentId=json_data["parentId"],
+            name=json_data["name"],
+            imei=json_data["imei"],
+            deviceTypeId=int(json_data["deviceTypeId"]),
+            modelId=json_data["modelId"],
+            sim1=json_data["sim1"]
+    )
+    return object_
+
 
 # Whost
 

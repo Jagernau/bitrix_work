@@ -13,6 +13,7 @@ from data_entry import (
         create_glonass_object,
         create_whost_object,
         create_glonass_model_object,
+        update_glonass_object,
         )
 from database.crud import (
         add_objects,
@@ -33,6 +34,7 @@ import json
         crud_objects - Работа с объектами(добавить из парсера в бд, удалить из бд, обновить в бд) \n
         create_object \n
         create_model_object (для Gsoft) \n 
+        update_object \n
         """
         )
 @click.option(
@@ -76,6 +78,11 @@ import json
         Для whost: \n
         Принимает json объекта \n
         '{"creatorId": "id клиента", "name": "имя", "hwTypeId": 0}' \n
+
+        Значения для update_object: \n
+        Для glonass: \n
+        Принимает json объекта \n
+        '{"vehicleId": "id объекта", "parentId": "id клиента", "name": "имя", "imei": "ime", "deviceTypeId": 0, "modelId": "id модели объекта", "sim1": "симка"}'
         """
         )
 def main(comand, monitor, value):
@@ -227,6 +234,11 @@ def main(comand, monitor, value):
             if monitor == "whost":
                whost_object =  create_whost_object(json.loads(value))
                print(whost_object)
+
+        if comand == "update_object":
+            if monitor == "glonass":
+               glonass_object =  update_glonass_object(json.loads(value))
+               print(glonass_object)
 
         
                 

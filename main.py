@@ -24,12 +24,7 @@ import time
 
 
 def job():
-    # add_objects(merge_glonasssoft_data())
-    # add_objects(merge_fort_data())
-    # add_objects(merge_wialon_host_data())
-    # add_objects(merge_wialon_local_data())
-    # add_objects(merge_scout_data())
-    # add_objects(merge_era_data())
+
 
     glonasssoft_data = merge_glonasssoft_data()
     fort_data = merge_fort_data()
@@ -38,6 +33,13 @@ def job():
     scout_data = merge_scout_data()
     era_data = merge_era_data()
 
+
+    # add_objects(glonasssoft_data)
+    # add_objects(merge_fort_data())
+    # add_objects(merge_wialon_host_data())
+    # add_objects(merge_wialon_local_data())
+    # add_objects(merge_scout_data())
+    # add_objects(merge_era_data())
 
     add_one_object(glonasssoft_data)
     add_one_object(fort_data)
