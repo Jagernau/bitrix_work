@@ -59,27 +59,16 @@ from database.crud import (
         rec_upd_one_client - Рекрусивно обновить клиентов в соответсвии данным из системы мониторинга \n
 
         Value для create_client: \n
-        принимает json клиента \n
+        принимает json клиента \n 
+
         glonass: \n
-        {
-            "parentId": "80eb1587-12cf-44d4-b0d0-c09b7ddf6110"
-            "name": "",
-            "fullName": "",
-            "inn": "",
-            "kpp": "",
-        } \n
+        '{"parentId": "80eb1587-12cf-44d4-b0d0-c09b7ddf6110", "name": "", "fullName": "", "inn": "", "kpp": ""}' \n
+
         fort: \n
-        {
-            'id': int,
-            'name': str,
-            "description": str,
-        }
+        '{"id": int, "name": str, "description": str}' \n 
+
         whost: \n
-        {
-            "creatorId": ""
-            "name": "",
-            "password": "",
-        }
+        '{"creatorId": "", "name": "", "password": ""}' \n
 
         Value для update_client: \n
         принимает json клиента \n
@@ -91,7 +80,7 @@ from database.crud import (
             ---"inn": "",
             ---"kpp": "",
 
-        }
+        } \n
         """
         )
 

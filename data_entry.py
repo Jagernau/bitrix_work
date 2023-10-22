@@ -322,8 +322,7 @@ def create_whost_object(json_data):
     :param json_data:
     :return:
     """
-    token = str(config.WIALON_HOST_TOKEN)
-    time.sleep(2)
+    token = str(config.TEST_IT_WHOST_TOKEN)
     client = create_wialon_host_unit(
             token=token, 
             creatorId=json_data["creatorId"],
@@ -451,7 +450,7 @@ def create_wialon_host_users(json_data):
     :param json_data:
     :return:
     """
-    token = str(config.WIALON_HOST_TOKEN)
+    token = str(config.TEST_IT_WHOST_TOKEN)
     time.sleep(2)
     client = create_wialon_host_user(
             token=token, 
