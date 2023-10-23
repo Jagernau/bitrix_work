@@ -8,6 +8,9 @@ from data_entry import (
         get_postgre_clients,
         generate_glonass_client,
         generate_fort_companys,
+        generate_wialon_host_users,
+        generate_wialon_local_users,
+
         )
 
 from database.crud import (
@@ -18,6 +21,9 @@ from database.crud import (
         add_clients_postgre,
         add_sys_mon_clients,
         add_one_sys_mon_client,
+        update_one_sys_mon_client,
+        delete_one_sys_mon_client,
+
         )
 import schedule
 import time
@@ -62,18 +68,43 @@ def job():
     update_one_object(scout_data)
     update_one_object(era_data)
 
-    #update_one_object(merge_wialon_host_data())
-    # add_clients_postgre(get_postgre_clients())
-    #add_sys_mon_clients(generate_glonass_client())
-    #add_one_sys_mon_client(generate_glonass_client())
-    #add_sys_mon_clients(generate_fort_companys())
+    #add_clients_postgre(get_postgre_clients())
+
+    glonass_clients = generate_glonass_client()
+    #fort_clients = generate_fort_companys()
+    wialon_host_users = generate_wialon_host_users()
+    wialon_local_users = generate_wialon_local_users()
+
+    #add_sys_mon_clients(glonass_clients)
+    #add_sys_mon_clients(fort_clients)
+    #add_sys_mon_clients(wialon_host_users)
+    #add_sys_mon_clients(wialon_local_users)
+
+    add_one_sys_mon_client(glonass_clients)
+    #add_one_sys_mon_client(fort_clients)
+    add_one_sys_mon_client(wialon_host_users)
+    add_one_sys_mon_client(wialon_local_users)
+
+    delete_one_sys_mon_client(glonass_clients)
+    #delete_one_sys_mon_client(fort_clients)
+    delete_one_sys_mon_client(wialon_host_users)
+    delete_one_sys_mon_client(wialon_local_users)
+
+    update_one_sys_mon_client(glonass_clients)
+    #update_one_sys_mon_client(fort_clients)
+    update_one_sys_mon_client(wialon_host_users)
+    update_one_sys_mon_client(wialon_local_users)
+
+
 
 if __name__ == '__main__':
+
     # start_time = time.time()
     # job()
     # end_time = time.time()
     # execution_time = end_time - start_time
     # print(f"Execution time: {execution_time} seconds")
+
     schedule.every().day.at("03:20").do(job)
     while True:
         schedule.run_pending()

@@ -8,7 +8,10 @@ from parser.classes import (
         SunPostgres,
         create_wialon_host_user,
         create_wialon_host_unit,
-
+        get_wialon_host_users,
+        create_wialon_local_user,
+        get_wialon_local_users,
+        create_wialon_local_unit,
         )
 from configurations import config
 import time
@@ -318,7 +321,7 @@ def update_glonass_object(json_data):
 
 def create_whost_object(json_data):
     """"
-    Добавить объект в систему мониторинга глонасс
+    Добавить объект в систему мониторинга wialon hosting
     :param json_data:
     :return:
     """
@@ -332,6 +335,22 @@ def create_whost_object(json_data):
     return client
 
 
+# Wlocal
+
+def create_wlocal_object(json_data):
+    """"
+    Добавить объект в систему мониторинга wialon local
+    :param json_data:
+    :return:
+    """
+    token = str(config.TEST_API_WLOCAL_TOKEN)
+    client = create_wialon_local_unit(
+            token=token, 
+            creatorId=json_data["creatorId"],
+            name=json_data["name"],
+            hwTypeId=json_data["hwTypeId"],
+            )
+    return client
 
 
 ###############################################
@@ -460,4 +479,58 @@ def create_wialon_host_users(json_data):
             )
     return client
 
+def generate_wialon_host_users():
+    """"
+    Массовое получение всех клиентов из системы мониторинга whosting
+    :return:
+    """
+    token = str(config.TEST_IT_WHOST_TOKEN)
+    time.sleep(2)
+    client = get_wialon_host_users(token=token)["items"]
+    result = []
+    for i in client:
+        marge = {}
+        marge["id_in_system_monitor"] = str(i["id"])
+        marge["name_in_system_monitor"] = str(i["nm"])
+        marge["owner_id_sys_mon"] = str(i["crt"])
+        marge["system_monitor_id"] = 3
+        result.append(marge)
+    return result
 
+
+# Wialon local 
+
+def generate_wialon_local_users():
+    """"
+    Массовое получение всех клиентов из системы мониторинга whosting
+    :return:
+    """
+    token = str(config.WIALON_LOCAL_TOKEN)
+    time.sleep(2)
+    client = get_wialon_local_users(token=token)["items"]
+    result = []
+    for i in client:
+        marge = {}
+        marge["id_in_system_monitor"] = str(i["id"])
+        marge["name_in_system_monitor"] = str(i["nm"])
+        marge["owner_id_sys_mon"] = str(i["crt"])
+        marge["system_monitor_id"] = 4
+        result.append(marge)
+    return result
+
+
+def create_wialon_local_users(json_data):
+    """"
+    Добавить клиента в систему мониторинга глонасс
+    :param json_data:
+    :return:
+    """
+    token = str(config.TEST_API_WLOCAL_TOKEN)
+    time.sleep(2)
+    client = create_wialon_local_user(
+            token=token, 
+            creatorId=json_data["creatorId"],
+            name=json_data["name"],
+            password=json_data["password"],
+            )
+    return client

@@ -11,7 +11,8 @@ from data_entry import (
     update_glonass_client,
     generate_glonass_client,
     create_fort_client,
-    create_wialon_host_users
+    create_wialon_host_users,
+    create_wialon_local_users,
 )
 from database.crud import (
    add_sys_mon_clients,
@@ -70,20 +71,18 @@ from database.crud import (
         whost: \n
         '{"creatorId": "", "name": "", "password": ""}' \n
 
+        wlocal: \n
+        '{"creatorId": "", "name": "", "password": ""}' \n
+
         Value для update_client: \n
         принимает json клиента \n
-        {
-            "agentId": "",
-            "parentId": ""
-            "name": name,
-            "fullName": "",
-            ---"inn": "",
-            ---"kpp": "",
 
-        } \n
+        glonass: \n
+        '{"agentId": "", "parentId": "", "name": name, "fullName": "",
+---"inn": "",---"kpp": ""} \n
+
         """
         )
-
 
 def main(comand, monitor, value):
     if comand == "get_postgres_clients_json":
@@ -101,11 +100,16 @@ def main(comand, monitor, value):
         if monitor == "whost":
             wialon_host_client = create_wialon_host_users(json.loads(value))
             print(wialon_host_client)
+        if monitor == "wlocal":
+            wialon_local_client = create_wialon_local_users(json.loads(value))
+            print(wialon_local_client)
+
 
     if comand == "update_client":
         if monitor == "glonass":
             glonass_client = update_glonass_client(json.loads(value))
             print(glonass_client)
+
 
     if comand == "crud_client_db":
         if monitor == "glonass":

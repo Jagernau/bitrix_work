@@ -14,6 +14,8 @@ from data_entry import (
         create_whost_object,
         create_glonass_model_object,
         update_glonass_object,
+        create_wlocal_object,
+
         )
 from database.crud import (
         add_objects,
@@ -76,6 +78,10 @@ import json
         '{"parentId": "id длиент", "name": "имя", "imei": "ime", "deviceTypeId": 0, "modelId": "id модели объекта клиента","sim1": "симка"}' \n
 
         Для whost: \n
+        Принимает json объекта \n
+        '{"creatorId": "id клиента", "name": "имя", "hwTypeId": 0}' \n
+
+        Для wlocal: \n 
         Принимает json объекта \n
         '{"creatorId": "id клиента", "name": "имя", "hwTypeId": 0}' \n
 
@@ -234,6 +240,9 @@ def main(comand, monitor, value):
             if monitor == "whost":
                whost_object =  create_whost_object(json.loads(value))
                print(whost_object)
+            if monitor == "wlocal":
+               wlocal_object =  create_wlocal_object(json.loads(value))
+               print(wlocal_object)
 
         if comand == "update_object":
             if monitor == "glonass":
