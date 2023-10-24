@@ -237,7 +237,7 @@ def get_postgre_clients():
 
 def get_onec_clients():
     sun = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
-    clients = sun.get_clients()
+    clients = sun.get_clients()["Клиенты"]
     return clients
 
 ##########################################################
