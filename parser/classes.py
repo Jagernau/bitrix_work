@@ -704,7 +704,6 @@ class SunPostgres:
         self.token = token
 
     def get_clients(self):
-
         url = 'http://158.160.73.178:8000/api/tklient/'
         headers = {
             'Authorization': f'Token {self.token}',
@@ -719,4 +718,16 @@ class SunPostgres:
         else:
             return None
 
+class OneC:
+    def __init__(self, token: str, url: str):
+        self.token = token
+        self.url = url
+
+    def get_clients(self):
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Accept': 'application/json'
+        }
+        response = requests.get(self.url, headers=headers)
+        return response
 

@@ -12,6 +12,7 @@ from parser.classes import (
         create_wialon_local_user,
         get_wialon_local_users,
         create_wialon_local_unit,
+        OneC,
         )
 from configurations import config
 import time
@@ -230,6 +231,12 @@ def merge_era_data():
 
 def get_postgre_clients():
     sun = SunPostgres(str(config.SUNAPI_TOKEN))
+    clients = sun.get_clients()
+    return clients
+
+
+def get_onec_clients():
+    sun = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
     clients = sun.get_clients()
     return clients
 

@@ -27,3 +27,6 @@ ERA_LOGIN = config["ERA_LOGIN"]
 ERA_PASSWORD = config["ERA_PASSWORD"]
 
 SUNAPI_TOKEN = config["SUNAPI_TOKEN"]
+
+ONE_C_TOKEN = config["ONE_C_TOKEN"]
+ONE_C_URL = config["ONE_C_URL"]

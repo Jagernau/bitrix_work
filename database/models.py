@@ -234,6 +234,8 @@ class SimCard(Base):
     sim_suntel_price = Column(Integer, comment='Стоимость сим для Сантел(закупочная)')
     sim_device_id = Column(ForeignKey('devices.device_id'), index=True, comment='ID к девайсам(devices)')
     sim_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
+    sim_date = Column(DateTime, comment='Дата регистрации сим')
+    name_it = Column(String(100, 'utf8mb3_unicode_ci'))
 
     sim_ca = relationship('Contragent')
     Cell_operator = relationship('CellOperator')

@@ -28,9 +28,11 @@ from database.crud import (
 import schedule
 import time
 
+import socket
+
+computer_name = str(socket.gethostname())
 
 def job():
-
 
     glonasssoft_data = merge_glonasssoft_data()
     fort_data = merge_fort_data()
@@ -95,6 +97,9 @@ def job():
     update_one_sys_mon_client(wialon_host_users)
     update_one_sys_mon_client(wialon_local_users)
 
+    if computer_name != "max-SWH":
+        pass
+    
 
 
 if __name__ == '__main__':
