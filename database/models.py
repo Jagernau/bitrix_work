@@ -60,7 +60,7 @@ class Contragent(Base):
     ca_bill_account_bank_name = Column(VARCHAR(60), comment='Наименование банка')
     ca_bill_account_ogrn = Column(VARCHAR(60), comment='ОГРН')
     ca_edo_connect = Column(TINYINT(1), comment='Обмен ЭДО')
-    ca_field_of_activity = Column(VARCHAR(60), comment='Сфера деятельности')
+    ca_field_of_activity = Column(VARCHAR(260), comment='Сфера деятельности')
     ca_type = Column(VARCHAR(60), comment='тип компании')
 
     ca_holding = relationship('Holding')
