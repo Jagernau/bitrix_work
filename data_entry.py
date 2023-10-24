@@ -541,3 +541,4 @@ def create_wialon_local_users(json_data):
             password=json_data["password"],
             )
     return client
+

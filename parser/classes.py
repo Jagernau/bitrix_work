@@ -729,5 +729,5 @@ class OneC:
             'Accept': 'application/json'
         }
         response = requests.get(self.url, headers=headers)
-        return response
+        return response.json()
 
