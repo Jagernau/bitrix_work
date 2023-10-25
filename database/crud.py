@@ -355,6 +355,12 @@ def add_all_clients_oneC(clients):
             ca_inn=i["ИНН"],
             ca_kpp=i["КПП"],
             ca_field_of_activity = i["НаправлениеБизнеса"],
+            unique_onec_id = i["УникальныйИдентификаторКлиента"],
+            registration_date = i["ДатаРегистрации"],
+            key_manager = i["ОсновнойМенеджер"],
+            actual_address = i["ФактическийАдрес1"],
+            registered_office = i["ЮридическийАдрес1"],
+            phone = i["Телефон"],
         )
        session.add(client)
     session.commit()

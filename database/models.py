@@ -62,6 +62,12 @@ class Contragent(Base):
     ca_edo_connect = Column(TINYINT(1), comment='Обмен ЭДО')
     ca_field_of_activity = Column(VARCHAR(260), comment='Сфера деятельности')
     ca_type = Column(VARCHAR(60), comment='тип компании')
+    unique_onec_id = Column(VARCHAR(100), comment='уникальный id в 1С контрагента ')
+    registration_date = Column(Date, comment='Дата регистрации в 1С')
+    key_manager = Column(VARCHAR(200), comment='Основной менеджер ')
+    actual_address = Column(VARCHAR(300), comment='Фактический адрес ')
+    registered_office = Column(VARCHAR(300), comment='Юридический адрес ')
+    phone = Column(VARCHAR(200), comment='Телефон ')
 
     ca_holding = relationship('Holding')
 

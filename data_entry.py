@@ -56,7 +56,7 @@ def merge_glonasssoft_data():
     result = []
     for i in vehicles:
         marge = {}
-        marge["id_in_system"] = i["vehicleId"]
+        marge["id_in_system"] = str(i["vehicleId"])
         marge["name"] = i["number"]
         marge["imei"] = i["imei"]
         marge["owner_agent"] = [agent["name"] for agent in agents if i["owner"] in agent["id"]][0]
@@ -189,7 +189,7 @@ def merge_scout_data():
     result = []
     for i in units:
         marge = {}
-        marge["id_in_system"] = i["UnitId"]
+        marge["id_in_system"] = str(i["UnitId"])
         marge["name"] = i["Name"]
         marge["imei"] = None
         marge["owner_agent"] = i["Description"]
