@@ -99,21 +99,21 @@ def job():
 
 
 # Работа с 1с
-    if computer_name != "max-SWH":
-        clients_oneC = get_onec_clients()
-        add_all_clients_oneC(clients_oneC)
+    # if computer_name != "max-SWH":
+    #     clients_oneC = get_onec_clients()
+    #     add_all_clients_oneC(clients_oneC)
     
 
 
 if __name__ == '__main__':
 
-    start_time = time.time()
-    job()
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time} seconds")
+    # start_time = time.time()
+    # job()
+    # end_time = time.time()
+    # execution_time = end_time - start_time
+    # print(f"Execution time: {execution_time} seconds")
 
-    # schedule.every().day.at("03:20").do(job)
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    schedule.every().day.at("03:20").do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
