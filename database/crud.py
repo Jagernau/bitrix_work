@@ -356,7 +356,7 @@ def add_all_clients_oneC(clients):
             ca_kpp=i["КПП"],
             ca_field_of_activity = i["НаправлениеБизнеса"],
             unique_onec_id = i["УникальныйИдентификаторКлиента"],
-            registration_date = i["ДатаРегистрации"],
+            registration_date = i["ДатаРегистрации"].split("T")[0],
             key_manager = i["ОсновнойМенеджер"],
             actual_address = i["ФактическийАдрес1"],
             registered_office = i["ЮридическийАдрес1"],
