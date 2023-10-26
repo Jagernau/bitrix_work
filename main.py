@@ -24,6 +24,9 @@ from database.crud import (
         update_one_sys_mon_client,
         delete_one_sys_mon_client,
         add_all_clients_oneC,
+        add_one_oneC_clients,
+        delete_one_oneC_client,
+        update_one_oneC_client,
         )
 import schedule
 import time
@@ -99,9 +102,12 @@ def job():
 
 
 # Работа с 1с
-    # if computer_name != "max-SWH":
-    #     clients_oneC = get_onec_clients()
-    #     add_all_clients_oneC(clients_oneC)
+    if computer_name != "max-SWH":
+        clients_oneC = get_onec_clients()
+        # add_all_clients_oneC(clients_oneC)
+        add_one_oneC_clients(clients_oneC)
+        # delete_one_oneC_client(clients_oneC)
+        update_one_oneC_client(clients_oneC)
     
 
 

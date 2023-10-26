@@ -1,3 +1,4 @@
+from collections.abc import ItemsView
 import database.models as models
 from database.database import Database
 from sqlalchemy import and_, or_, update
@@ -354,7 +355,7 @@ def add_all_clients_oneC(clients):
     """
     session = Database().session
     for i in clients:
-       client = models.Contragent(
+        client = models.Contragent(
             ca_name=i["Наименование"].replace('\xa0', ' '),
             ca_shortname=i["НаименованиеПолное"].replace('\xa0', ' '),
             ca_type=i["ЮрФизЛицо"].replace('\xa0', ' '),
@@ -368,7 +369,7 @@ def add_all_clients_oneC(clients):
             registered_office = i["ЮридическийАдрес1"],
             phone = i["Телефон"],
         )
-       session.add(client)
+        session.add(client)
     session.commit()
     session.close()
 
@@ -376,5 +377,80 @@ def add_all_clients_oneC(clients):
 def add_one_oneC_clients(clients):
     session = Database().session
     clients_in_db = session.query(models.Contragent.unique_onec_id).all()
-    return clients_in_db
+    all_id_from_db = set()
+    for i in clients_in_db:
+        all_id_from_db.add(i[0])
+    for item in clients:
+        if item["УникальныйИдентификаторКлиента"] not in all_id_from_db:
+            one_client = models.Contragent(
+                ca_name=item["Наименование"].replace('\xa0', ' '),
+                ca_shortname=item["НаименованиеПолное"].replace('\xa0', ' '),
+                ca_type=item["ЮрФизЛицо"].replace('\xa0', ' '),
+                ca_inn=item["ИНН"],
+                ca_kpp=item["КПП"],
+                ca_field_of_activity = item["НаправлениеБизнеса"],
+                unique_onec_id = item["УникальныйИдентификаторКлиента"],
+                registration_date = item["ДатаРегистрации"].split("T")[0],
+                key_manager = item["ОсновнойМенеджер"],
+                actual_address = item["ФактическийАдрес1"],
+                registered_office = item["ЮридическийАдрес1"],
+                phone = item["Телефон"],
+            )
+            session.add(one_client)
+    session.commit()
+    session.close()
+ 
     
+def delete_one_oneC_client(clients):
+    session = Database().session
+    db_clients = session.query(models.Contragent.unique_onec_id).all()
+    all_id_db_clients = set()
+    for i in db_clients:
+        all_id_db_clients.add(i[0])
+    all_id_oneC = set()
+    for item in clients:
+        all_id_oneC.add(item["УникальныйИдентификаторКлиента"])
+    for id_ in all_id_db_clients:
+        if id_ not in all_id_oneC:
+            session.query(models.Contragent).filter(models.Contragent.unique_onec_id == id_).delete()
+
+    session.commit()
+    session.close()
+
+
+def update_one_oneC_client(clients):
+    session = Database().session
+    clients_in_db = session.query(models.Contragent)
+    for i in clients:
+        for e in clients_in_db:
+            if i["УникальныйИдентификаторКлиента"] == e.unique_onec_id:
+
+                if str(e.ca_name).replace('\xa0', ' ') != i["Наименование"].replace('\xa0', ' '):
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_name = i["Наименование"].replace('\xa0', ' ')))
+
+                if str(e.ca_shortname).replace('\xa0', ' ') != i["НаименованиеПолное"].replace('\xa0', ' '):
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_shortname = i["НаименованиеПолное"].replace('\xa0', ' ')))
+
+                if str(e.ca_type).replace('\xa0', ' ') != i["ЮрФизЛицо"].replace('\xa0', ' '):
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_type = i["ЮрФизЛицо"].replace('\xa0', ' ')))
+
+                if e.ca_inn != i["ИНН"]:
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_inn = i["ИНН"]))
+
+                if e.ca_kpp != i["КПП"]:
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_kpp = i["КПП"]))
+
+                if e.ca_field_of_activity != i["НаправлениеБизнеса"]:
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_field_of_activity = i["НаправлениеБизнеса"]))
+
+                if e.key_manager != i["ОсновнойМенеджер"]:
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(key_manager = i["ОсновнойМенеджер"]))
+
+                if e.actual_address != i["ФактическийАдрес1"]:
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(actual_address = i["ФактическийАдрес1"]))
+
+                if e.registered_office != i["ЮридическийАдрес1"]:
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(registered_office = i["ЮридическийАдрес1"]))
+
+    session.commit()
+    session.close()
