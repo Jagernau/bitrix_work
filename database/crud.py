@@ -338,13 +338,19 @@ def get_db_users_from_sysem(system_id: int):
 
 def add_all_clients_oneC(clients):
     """
-    Добавляет клиентов в БД из API на Postgre
-      "name": "Венета ООО",
-      "shortname": " ООО Венета",
-      "type": "Юридическое лицо",
-      "inn": "5258072217",
-      "kpp": "525801001",
-      "tarif": null
+    Добавляет клиентов в БД MySQL из 1С 
+    "Наименование",
+    "НаименованиеПолное",
+    "ЮрФизЛицо",
+    "ИНН",
+    "КПП",
+    "НаправлениеБизнеса",
+    "УникальныйИдентификаторКлиента",
+    "ДатаРегистрации",
+    "ОсновнойМенеджер",
+    "ФактическийАдрес1",
+    "ЮридическийАдрес1",
+    "Телефон"
     """
     session = Database().session
     for i in clients:
@@ -365,3 +371,10 @@ def add_all_clients_oneC(clients):
        session.add(client)
     session.commit()
     session.close()
+
+
+def add_one_oneC_clients(clients):
+    session = Database().session
+    clients_in_db = session.query(models.Contragent.unique_onec_id).all()
+    return clients_in_db
+    
