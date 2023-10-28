@@ -3,7 +3,7 @@ import database.models as models
 from database.database import Database
 from sqlalchemy import and_, or_, update
 from datetime import datetime
-
+from database.logging_crud import log_clients, log_objects
 
 
 ###############################################
@@ -127,6 +127,14 @@ def delete_one_object(marge_data: list):
         all_id_from_sysmon.add(item["id_in_system"])
     for id_ in all_id_from_db:
         if id_ not in all_id_from_sysmon:
+            log_objects(
+                object_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first()[0],
+                field="name",
+                old_value=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().object_name,
+                new_value="0",
+                action="delete",
+                sys_id=sys_id
+            )
             session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).delete()
     session.commit()
     session.close()
@@ -160,12 +168,16 @@ def update_one_object(marge_data: list):
         for e in objects_in_db:
             if i["id_in_system"] == e.sys_mon_object_id:
                 if i["name"] != e.object_name:
+                    log_objects(object_id = e.sys_mon_object_id, field = "name", old_value = e.object_name, new_value = i["name"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_name = i["name"]))
                 if i["imei"] != e.imei:
+                    log_objects(object_id = e.sys_mon_object_id, field = "imei", old_value = e.imei, new_value = i["imei"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(imei = i["imei"]))
                 if i["owner_agent"] != e.owner_contragent:
+                    log_objects(object_id = e.sys_mon_object_id, field = "owner_agent", old_value = e.owner_contragent, new_value = i["owner_agent"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_contragent = i["owner_agent"]))
                 if i["created"] != e.object_created:
+                    #log_objects(object_id = e.sys_mon_object_id, field = "created", old_value = e.object_created, new_value = i["created"], action = "update")
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_created = i["created"]))
                 if i["updated"] != e.updated:
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(updated = i["updated"]))
@@ -174,10 +186,13 @@ def update_one_object(marge_data: list):
                 #if i["monitor_sys_id"] != e.sys_mon_id:
                     #session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"]).values(sys_mon_id = i["monitor_sys_id"]))
                 if i["object_status_id"] != e.object_status:
+                    log_objects(object_id = e.sys_mon_object_id, field = "object_status_id", old_value = e.object_status, new_value = i["object_status_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
                 if i["user"] != e.owner_user:
+                    log_objects(object_id = e.sys_mon_object_id, field = "owner_user", old_value = e.owner_user, new_value = i["user"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_user = i["user"]))
                 if i["parent_id"] != e.parent_id_sys:
+                    log_objects(object_id = e.sys_mon_object_id, field = "parent_id", old_value = e.parent_id_sys, new_value = i["parent_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
 
     session.commit()
@@ -426,30 +441,39 @@ def update_one_oneC_client(clients):
             if i["УникальныйИдентификаторКлиента"] == e.unique_onec_id:
 
                 if str(e.ca_name).replace('\xa0', ' ') != i["Наименование"].replace('\xa0', ' '):
+                    log_clients(contragent_id=e.ca_id, field='ca_name', old_value=e.ca_name, new_value=i["Наименование"].replace('\xa0', ' ')) 
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_name = i["Наименование"].replace('\xa0', ' ')))
 
                 if str(e.ca_shortname).replace('\xa0', ' ') != i["НаименованиеПолное"].replace('\xa0', ' '):
+                    log_clients(contragent_id=e.ca_id, field='ca_shortname', old_value=e.ca_shortname, new_value=i["НаименованиеПолное"].replace('\xa0', ' '))
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_shortname = i["НаименованиеПолное"].replace('\xa0', ' ')))
 
                 if str(e.ca_type).replace('\xa0', ' ') != i["ЮрФизЛицо"].replace('\xa0', ' '):
+                    log_clients(contragent_id=e.ca_id, field='ca_type', old_value=e.ca_type, new_value=i["ЮрФизЛицо"].replace('\xa0', ' '))
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_type = i["ЮрФизЛицо"].replace('\xa0', ' ')))
 
                 if e.ca_inn != i["ИНН"]:
+                    log_clients(contragent_id=e.ca_id, field='ca_inn', old_value=e.ca_inn, new_value=i["ИНН"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_inn = i["ИНН"]))
 
                 if e.ca_kpp != i["КПП"]:
+                    log_clients(contragent_id=e.ca_id, field='ca_kpp', old_value=e.ca_kpp, new_value=i["КПП"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_kpp = i["КПП"]))
 
                 if e.ca_field_of_activity != i["НаправлениеБизнеса"]:
+                    log_clients(contragent_id=e.ca_id, field='ca_field_of_activity', old_value=e.ca_field_of_activity, new_value=i["НаправлениеБизнеса"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_field_of_activity = i["НаправлениеБизнеса"]))
 
                 if e.key_manager != i["ОсновнойМенеджер"]:
+                    log_clients(contragent_id=e.ca_id, field='key_manager', old_value=e.key_manager, new_value=i["ОсновнойМенеджер"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(key_manager = i["ОсновнойМенеджер"]))
 
                 if e.actual_address != i["ФактическийАдрес1"]:
+                    log_clients(contragent_id=e.ca_id, field='actual_address', old_value=e.actual_address, new_value=i["ФактическийАдрес1"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(actual_address = i["ФактическийАдрес1"]))
 
                 if e.registered_office != i["ЮридическийАдрес1"]:
+                    log_clients(contragent_id=e.ca_id, field='registered_office', old_value=e.registered_office, new_value=i["ЮридическийАдрес1"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(registered_office = i["ЮридическийАдрес1"]))
 
     session.commit()

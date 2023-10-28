@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,6 +13,17 @@ class CellOperator(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(60, 'utf8mb3_unicode_ci'), nullable=False)
+
+
+class ClientsLog(Base):
+    __tablename__ = 'clients_log'
+
+    id = Column(Integer, primary_key=True)
+    contragent_id = Column(Integer, nullable=False)
+    field = Column(String(50, 'utf8mb3_unicode_ci'), nullable=False)
+    old_value = Column(String(255, 'utf8mb3_unicode_ci'))
+    new_value = Column(String(255, 'utf8mb3_unicode_ci'))
+    change_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
 
 
 class GuaranteeTerm(Base):
@@ -106,6 +117,21 @@ class CaObject(Base):
 
     object_status1 = relationship('ObjectStatus')
     sys_mon = relationship('MonitoringSystem')
+
+
+class ObjectsLog(Base):
+    __tablename__ = 'objects_log'
+
+    id = Column(Integer, primary_key=True)
+    object_id = Column(Integer, nullable=False)
+    field = Column(String(50, 'utf8mb3_unicode_ci'), nullable=False)
+    old_value = Column(String(255, 'utf8mb3_unicode_ci'))
+    new_value = Column(String(255, 'utf8mb3_unicode_ci'))
+    change_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
+    action = Column(String(20, 'utf8mb3_unicode_ci'), nullable=False)
+    sys_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False, index=True)
+
+    sys = relationship('MonitoringSystem')
 
 
 class CaContact(Base):
@@ -242,6 +268,8 @@ class SimCard(Base):
     sim_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
     sim_date = Column(DateTime, comment='Дата регистрации сим')
     name_it = Column(String(100, 'utf8mb3_unicode_ci'))
+    status = Column(Integer)
+    terminal_imei = Column(Integer)
 
     sim_ca = relationship('Contragent')
     Cell_operator = relationship('CellOperator')
