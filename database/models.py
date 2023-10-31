@@ -15,15 +15,18 @@ class CellOperator(Base):
     name = Column(String(60, 'utf8mb3_unicode_ci'), nullable=False)
 
 
-class ClientsLog(Base):
-    __tablename__ = 'clients_log'
+class GlobalLogging(Base):
+    __tablename__ = 'global_logging'
 
     id = Column(Integer, primary_key=True)
-    contragent_id = Column(Integer, nullable=False)
+    section_type = Column(String(50, 'utf8mb3_unicode_ci'), nullable=False)
+    edit_id = Column(Integer, nullable=False)
     field = Column(String(50, 'utf8mb3_unicode_ci'), nullable=False)
     old_value = Column(String(255, 'utf8mb3_unicode_ci'))
     new_value = Column(String(255, 'utf8mb3_unicode_ci'))
     change_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
+    sys_id = Column(Integer)
+    action = Column(String(100, 'utf8mb3_unicode_ci'))
 
 
 class GuaranteeTerm(Base):
@@ -110,28 +113,13 @@ class CaObject(Base):
     object_margin = Column(Integer, comment='Надбавка к базовой цене объекта')
     owner_contragent = Column(VARCHAR(200), comment='Хозяин контрагент')
     owner_user = Column(VARCHAR(255), comment='Хозяин юзер')
-    imei = Column(VARCHAR(30), comment='идентификатор терминала')
+    imei = Column(VARCHAR(100), comment='идентификатор терминала')
     updated = Column(DateTime, comment='Когда изменён')
     object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')
     parent_id_sys = Column(VARCHAR(200), comment='Id клиента в системе мониторинга')
 
     object_status1 = relationship('ObjectStatus')
     sys_mon = relationship('MonitoringSystem')
-
-
-class ObjectsLog(Base):
-    __tablename__ = 'objects_log'
-
-    id = Column(Integer, primary_key=True)
-    object_id = Column(Integer, nullable=False)
-    field = Column(String(50, 'utf8mb3_unicode_ci'), nullable=False)
-    old_value = Column(String(255, 'utf8mb3_unicode_ci'))
-    new_value = Column(String(255, 'utf8mb3_unicode_ci'))
-    change_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
-    action = Column(String(20, 'utf8mb3_unicode_ci'), nullable=False)
-    sys_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False, index=True)
-
-    sys = relationship('MonitoringSystem')
 
 
 class CaContact(Base):
@@ -184,16 +172,15 @@ class Device(Base):
     __tablename__ = 'devices'
 
     device_id = Column(Integer, primary_key=True)
-    device_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
     device_name = Column(VARCHAR(60), comment='Название устройства')
-    device_vendor_name = Column(VARCHAR(255), comment='Наименоваине производителя устройства')
     device_vendor_model = Column(VARCHAR(255), comment='Модель устройства')
     device_imei = Column(VARCHAR(60), nullable=False, unique=True, comment='IMEI устройства')
     device_serial = Column(VARCHAR(60), unique=True, comment='Серийный номер устройства')
-    device_guarantee_term_id = Column(Integer, comment='ID гарантийных условий')
-    device_sale_date = Column(Date, comment='Дата продажи устройства')
+    device_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
+    sys_mon_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID системы мониторинга')
 
     device_ca = relationship('Contragent')
+    sys_mon = relationship('MonitoringSystem')
 
 
 class ObjectCustomField(Base):
@@ -267,10 +254,12 @@ class SimCard(Base):
     sim_device_id = Column(ForeignKey('devices.device_id'), index=True, comment='ID к девайсам(devices)')
     sim_ca_id = Column(ForeignKey('Contragents.ca_id'), index=True, comment='ID контрагента')
     sim_date = Column(DateTime, comment='Дата регистрации сим')
-    name_it = Column(String(100, 'utf8mb3_unicode_ci'))
-    status = Column(Integer)
-    terminal_imei = Column(Integer)
+    name_it = Column(VARCHAR(100), comment='Имя активировавшего')
+    status = Column(Integer, comment='Активность симки')
+    terminal_imei = Column(Integer, comment='IMEI терминала в который вставлена симка')
+    contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='SET NULL'), index=True, comment='ID контрагента')
 
-    sim_ca = relationship('Contragent')
+    contragent = relationship('Contragent', primaryjoin='SimCard.contragent_id == Contragent.ca_id')
+    sim_ca = relationship('Contragent', primaryjoin='SimCard.sim_ca_id == Contragent.ca_id')
     Cell_operator = relationship('CellOperator')
     sim_device = relationship('Device')
