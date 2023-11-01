@@ -86,20 +86,6 @@ class Contragent(Base):
     ca_holding = relationship('Holding')
 
 
-class LoginUser(Base):
-    __tablename__ = 'Login_users'
-
-    id = Column(Integer, primary_key=True)
-    client_name = Column(VARCHAR(200))
-    login = Column(VARCHAR(60))
-    email = Column(VARCHAR(60))
-    password = Column(VARCHAR(60))
-    date_create = Column(Date)
-    system_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
-
-    system = relationship('MonitoringSystem')
-
-
 class CaObject(Base):
     __tablename__ = 'ca_objects'
 
@@ -120,6 +106,22 @@ class CaObject(Base):
 
     object_status1 = relationship('ObjectStatus')
     sys_mon = relationship('MonitoringSystem')
+
+
+class LoginUser(Base):
+    __tablename__ = 'Login_users'
+
+    id = Column(Integer, primary_key=True)
+    client_name = Column(VARCHAR(200))
+    login = Column(VARCHAR(60))
+    email = Column(VARCHAR(60))
+    password = Column(VARCHAR(60))
+    date_create = Column(Date)
+    system_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+    contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='RESTRICT'), index=True, comment='ID контрагента')
+
+    contragent = relationship('Contragent')
+    system = relationship('MonitoringSystem')
 
 
 class CaContact(Base):
@@ -256,7 +258,7 @@ class SimCard(Base):
     sim_date = Column(DateTime, comment='Дата регистрации сим')
     name_it = Column(VARCHAR(100), comment='Имя активировавшего')
     status = Column(Integer, comment='Активность симки')
-    terminal_imei = Column(Integer, comment='IMEI терминала в который вставлена симка')
+    terminal_imei = Column(String(25, 'utf8mb3_unicode_ci'), comment='IMEI терминала в который вставлена симка')
     contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='SET NULL'), index=True, comment='ID контрагента')
 
     contragent = relationship('Contragent', primaryjoin='SimCard.contragent_id == Contragent.ca_id')
