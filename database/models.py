@@ -119,6 +119,7 @@ class LoginUser(Base):
     date_create = Column(Date)
     system_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
     contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='RESTRICT'), index=True, comment='ID контрагента')
+    comment_field = Column(String(270, 'utf8mb3_unicode_ci'), comment='Поле с комментариями')
 
     contragent = relationship('Contragent')
     system = relationship('MonitoringSystem')
@@ -183,16 +184,6 @@ class Device(Base):
 
     device_ca = relationship('Contragent')
     sys_mon = relationship('MonitoringSystem')
-
-
-class ObjectCustomField(Base):
-    __tablename__ = 'object_custom_fields'
-
-    custom_field_id = Column(Integer, primary_key=True)
-    custom_field_object_id = Column(ForeignKey('ca_objects.id'), index=True)
-    custom_text = Column(String(255, 'utf8mb3_unicode_ci'))
-
-    custom_field_object = relationship('CaObject')
 
 
 class ObjectRetranslator(Base):
