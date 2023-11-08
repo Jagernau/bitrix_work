@@ -23,23 +23,23 @@ def bool_ratio(value1: str, value2: str):
 #         
 
 
-def join_user_client():
-    session = Database().session
-    users = session.query(models.LoginUser).filter(models.LoginUser.contragent_id == None).all()
-    clients = session.query(models.Contragent.ca_id, models.Contragent.ca_name, models.Contragent.ca_shortname).all()
-    session.close()
-    for user in users:
-        for client in clients:
-           if bool_ratio(clear_func(str(user.client_name)), clear_func(str(client.ca_name))) or bool_ratio(clear_func(str(user.client_name)), clear_func(str(client.ca_shortname))):
-# #            if bool_ratio(fisic_clients_clear(str(user.client_name)), fisic_clients_clear(str(client.ca_name))) or bool_ratio(fisic_clients_clear(str(user.client_name)), fisic_clients_clear(str(client.ca_shortname))):
-                print(user.client_name, client.ca_name)
-    #             session.query(models.LoginUser).filter(models.LoginUser.id == user.id).update({
-    #                 "contragent_id": client.ca_id
-    #             })
-    # session.commit()
-    # session.close()
-# #
-join_user_client()
+# def join_user_client():
+#     session = Database().session
+#     users = session.query(models.LoginUser).filter(models.LoginUser.contragent_id == None).all()
+#     clients = session.query(models.Contragent.ca_id, models.Contragent.ca_name, models.Contragent.ca_shortname).all()
+#     session.close()
+#     for user in users:
+#         for client in clients:
+#            if bool_ratio(clear_func(str(user.client_name)), clear_func(str(client.ca_name))) or bool_ratio(clear_func(str(user.client_name)), clear_func(str(client.ca_shortname))):
+# # # #            if bool_ratio(fisic_clients_clear(str(user.client_name)), fisic_clients_clear(str(client.ca_name))) or bool_ratio(fisic_clients_clear(str(user.client_name)), fisic_clients_clear(str(client.ca_shortname))):
+#                 print(user.client_name, client.ca_name)
+#                 session.query(models.LoginUser).filter(models.LoginUser.id == user.id).update({
+#                     "contragent_id": client.ca_id
+#                 })
+#     session.commit()
+#     session.close()
+# # # #
+# join_user_client()
 
 # def first_clean():
 #     """
@@ -63,10 +63,10 @@ join_user_client()
 #     session = Database().session
 #     users = session.query(models.LoginUser).filter(models.LoginUser.contragent_id == None).all()
 #     session.close()
-#     results = ""
-#     for user in users:
-#         results += f"{user.client_name}---{user.login}" + "\n"
-#     return results
+#     # results = ""
+#     # for user in users:
+#     #     results += f"{user.client_name}---{user.login}" + "\n"
+#     return len(users)
 # #
 # print(get_residual_counter_id())
 # with open("residual.txt", "w", encoding="utf-8") as f:
@@ -203,7 +203,7 @@ join_user_client()
 #     session.close()
 #
 # seven_clean()
-#
+
 # def sim_firs_clean():
 #     session = Database().session
 #     sims = session.query(models.SimCard).filter(models.SimCard.contragent_id == None).all()

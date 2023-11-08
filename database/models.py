@@ -86,28 +86,6 @@ class Contragent(Base):
     ca_holding = relationship('Holding')
 
 
-class CaObject(Base):
-    __tablename__ = 'ca_objects'
-
-    id = Column(Integer, primary_key=True)
-    sys_mon_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID системы мониторинга')
-    sys_mon_object_id = Column(VARCHAR(50), comment='ID объекта в системе мониторинга')
-    object_name = Column(VARCHAR(70), comment='Название объекта')
-    object_status = Column(ForeignKey('object_statuses.status_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Статус объекта ссылается к статусам')
-    object_add_date = Column(DateTime, comment='Дата добавления объекта')
-    object_last_message = Column(DateTime, comment='Дата последнего сообщения')
-    object_margin = Column(Integer, comment='Надбавка к базовой цене объекта')
-    owner_contragent = Column(VARCHAR(200), comment='Хозяин контрагент')
-    owner_user = Column(VARCHAR(255), comment='Хозяин юзер')
-    imei = Column(VARCHAR(100), comment='идентификатор терминала')
-    updated = Column(DateTime, comment='Когда изменён')
-    object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')
-    parent_id_sys = Column(VARCHAR(200), comment='Id клиента в системе мониторинга')
-
-    object_status1 = relationship('ObjectStatus')
-    sys_mon = relationship('MonitoringSystem')
-
-
 class LoginUser(Base):
     __tablename__ = 'Login_users'
 
@@ -155,6 +133,30 @@ class CaContract(Base):
     contract_expired_date = Column(Date, comment='Дата завершения договора')
 
     ca = relationship('Contragent')
+
+
+class CaObject(Base):
+    __tablename__ = 'ca_objects'
+
+    id = Column(Integer, primary_key=True)
+    sys_mon_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID системы мониторинга')
+    sys_mon_object_id = Column(VARCHAR(50), comment='ID объекта в системе мониторинга')
+    object_name = Column(VARCHAR(70), comment='Название объекта')
+    object_status = Column(ForeignKey('object_statuses.status_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Статус объекта ссылается к статусам')
+    object_add_date = Column(DateTime, comment='Дата добавления объекта')
+    object_last_message = Column(DateTime, comment='Дата последнего сообщения')
+    object_margin = Column(Integer, comment='Надбавка к базовой цене объекта')
+    owner_contragent = Column(VARCHAR(200), comment='Хозяин контрагент')
+    owner_user = Column(VARCHAR(255), comment='Хозяин юзер')
+    imei = Column(VARCHAR(100), comment='идентификатор терминала')
+    updated = Column(DateTime, comment='Когда изменён')
+    object_created = Column(DateTime, comment='Дата создания в системе мониторинга ')
+    parent_id_sys = Column(VARCHAR(200), comment='Id клиента в системе мониторинга')
+    contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
+
+    contragent = relationship('Contragent')
+    object_status1 = relationship('ObjectStatus')
+    sys_mon = relationship('MonitoringSystem')
 
 
 class ClientsInSystemMonitor(Base):

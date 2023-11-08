@@ -39,7 +39,7 @@ def add_objects(marge_data: list):
             sys_mon_id=i["monitor_sys_id"],
             object_status=i["object_status_id"],
             owner_user=i["user"],
-            parent_id_sys = i["parent_id"]
+            parent_id_sys = i["parent_id"],
         )
         session.add(ca_object)
     session.commit()
@@ -67,6 +67,10 @@ def add_one_object(marge_data: list):
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
+    users_logins = session.query(models.LoginUser).filter(
+        models.LoginUser.system_id == sys_id,
+        models.LoginUser.contragent_id != None
+    )
     objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
         models.CaObject.sys_mon_id == sys_id,
     )
@@ -76,6 +80,13 @@ def add_one_object(marge_data: list):
 
     for item in marge_data:
         if item["id_in_system"] not in all_id_from_db:
+
+
+            contragent_id = users_logins.filter(
+                models.LoginUser.login == item["user"],
+            )
+            result = contragent_id.first().contragent_id if contragent_id.first() else None
+
             ca_object = models.CaObject(
                 sys_mon_object_id=item["id_in_system"],
                 object_name=item["name"],
@@ -87,7 +98,8 @@ def add_one_object(marge_data: list):
                 sys_mon_id=item["monitor_sys_id"],
                 object_status=item["object_status_id"],
                 owner_user=item["user"],
-                parent_id_sys = item["parent_id"]
+                parent_id_sys = item["parent_id"],
+                contragent_id = int(result) if result else None
             )
             session.add(ca_object)
             session.commit()
@@ -180,6 +192,13 @@ def update_one_object(marge_data: list):
     objects_in_db = session.query(models.CaObject).filter(
         models.CaObject.sys_mon_id == sys_id        
     )
+    
+
+    users_logins = session.query(models.LoginUser).filter(
+        models.LoginUser.system_id == sys_id,
+        models.LoginUser.contragent_id != None
+    )
+
     for i in marge_data:
       
         for e in objects_in_db:
@@ -216,6 +235,16 @@ def update_one_object(marge_data: list):
                 if str(i["parent_id"]) != str(e.parent_id_sys):
                     log_global(section_type="object", edit_id = e.id, field = "parent_id", old_value = e.parent_id_sys, new_value = i["parent_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
+
+
+                contr_id = users_logins.filter(
+                    models.LoginUser.login == i["user"],
+                )
+                result = contr_id.first().contragent_id if contragent_id.first() else None
+                if result != e.contragent_id:
+                    log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = result, action = "update", sys_id = int(i["monitor_sys_id"]))
+                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = result))
+
     session.commit()
     session.close()
 
