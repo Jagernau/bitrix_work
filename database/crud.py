@@ -239,8 +239,8 @@ def update_one_object(marge_data: list):
 
                 contr_id = users_logins.filter(
                     models.LoginUser.login == i["user"],
-                )
-                result = contr_id.first().contragent_id if contragent_id.first() else None
+                    )
+                result = contr_id.first().contragent_id if contr_id.first() else None
                 if result != e.contragent_id:
                     log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = result, action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = result))
