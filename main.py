@@ -28,6 +28,8 @@ from database.crud import (
         delete_one_oneC_client,
         update_one_oneC_client,
         )
+
+from database_cleanup import join_user_client
 import schedule
 import time
 import logging
@@ -57,6 +59,13 @@ logger.addHandler(file_handler)
 
 
 def job():
+
+    try:
+        join_user_client()
+        logger.info("Пользователи успешно прикрепились к клиентам")
+    except Exception as e:
+        logger.error(f"В прикреплении пользователей возникла ошибка: {e}")
+
     try:
         glonasssoft_data = merge_glonasssoft_data()
         #add_objects(glonasssoft_data)
