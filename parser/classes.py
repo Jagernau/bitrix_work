@@ -272,6 +272,39 @@ class Glonasssoft:
         else:
             return f"Failed to update object. Error:  {response.text}"
 
+    @staticmethod
+    def put_terminal_comands(*args, **kwargs):
+        """ 
+        Отправка команды в терминал
+            "sourceid": "string",
+            "destinationid": "string",
+            "tasktype": 0,
+            "taskdata": "string",
+            "trycount": 0,
+            "TryMax": "3",
+            "answer": "",
+            "owner": "string",
+        """
+        url = "https://hosting.glonasssoft.ru/api/commands/put"
+        headers = {
+            "X-Auth": kwargs["token"],
+        }
+        data = [{
+            "sourceid": kwargs["sourceid"],
+            "destinationid": kwargs["destinationid"],
+            "tasktype": 0,
+            "taskdata": kwargs["taskdata"],
+            "trycount": 0,
+            "TryMax": "3",
+            "answer": "",
+            "owner": kwargs["owner"],
+        }]
+        response = requests.put(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Failed to connect terminal. Error: {response.status_code} {response.text}"
+
 
 
 class Fort:

@@ -542,3 +542,26 @@ def create_wialon_local_users(json_data):
             )
     return client
 
+
+################################################
+# Utils objects
+################################################
+# Glonasssoft
+def put_comand_to_glonasssoft(json_data):
+    """"
+    Добавить команду в систему мониторинга глонасс
+    :param json_data:
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    comand  = glonasssoft.put_terminal_comands(
+            token=token,
+            sourceid = str(config.SOURCE_GLONASS_ID),
+            destinationid = json_data["imei"],
+            taskdata = json_data["command"],
+            owner = json_data["owner"],
+            )
+    return comand
+
