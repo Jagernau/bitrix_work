@@ -565,3 +565,18 @@ def put_comand_to_glonasssoft(json_data):
             )
     return comand
 
+def get_comands_glonasssoft(json_data):
+    """"
+    Получить отчёт по командам глонасс
+    :param json_data:
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    comand  = glonasssoft.get_terminal_comands(
+            token=token,
+            imei = json_data["imei"],
+            start = json_data["start"],
+            )
+    return comand

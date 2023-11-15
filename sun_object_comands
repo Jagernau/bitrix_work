@@ -16,6 +16,7 @@ from data_entry import (
         update_glonass_object,
         create_wlocal_object,
         put_comand_to_glonasssoft,
+        get_comands_glonasssoft,
         )
 from database.crud import (
         add_objects,
@@ -94,6 +95,11 @@ import json
         Для glonass: \n
         Принимает json объекта \n
         '{"imei": "IMEI", "command": "команда", "owner": "id клиента"}'
+
+        Значения для get_report_comands: \n
+        Для glonass: \n
+        Принимает json объекта \n
+        '{"imei": "IMEI", "start": "2022-01-18"}'
 
         """
         )
@@ -260,6 +266,10 @@ def main(comand, monitor, value):
                glonass_comand =  put_comand_to_glonasssoft(json.loads(value))
                print(glonass_comand)
 
+        if comand == "get_report_comands":
+            if monitor == "glonass":
+               glonass_report = get_comands_glonasssoft(json.loads(value))
+               print(glonass_report)
         
                 
     else:

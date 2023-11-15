@@ -17,11 +17,18 @@ class CellOperator(Base):
     sun_price = Column(Integer, comment='Цена для Сантел')
 
 
-class DevicesBrand(Base):
-    __tablename__ = 'devices_brands'
+class DevicesCommand(Base):
+    __tablename__ = 'devices_commands'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(200, 'utf8mb3_unicode_ci'))
+    command = Column(String(20, 'utf8mb3_unicode_ci'))
+
+
+class DevicesVendor(Base):
+    __tablename__ = 'devices_vendor'
+
+    id = Column(Integer, primary_key=True)
+    vendor_name = Column(String(35, 'utf8mb3_unicode_ci'))
 
 
 class GlobalLogging(Base):
@@ -93,6 +100,16 @@ class Contragent(Base):
     phone = Column(VARCHAR(200), comment='Телефон ')
 
     ca_holding = relationship('Holding')
+
+
+class DevicesBrand(Base):
+    __tablename__ = 'devices_brands'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(200, 'utf8mb3_unicode_ci'))
+    devices_vendor_id = Column(ForeignKey('devices_vendor.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Id Вендора терминалов')
+
+    devices_vendor = relationship('DevicesVendor')
 
 
 class LoginUser(Base):
@@ -192,12 +209,14 @@ class Device(Base):
     device_imei = Column(VARCHAR(60), comment='IMEI устройства')
     client_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя клиента')
     terminal_date = Column(DateTime, comment='Дата программирования терминала')
-    brands_id = Column(Integer, comment='ID Модели устройства ')
+    devices_brand_id = Column(ForeignKey('devices_brands.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID Модели устройства ')
     name_it = Column(String(15, 'utf8mb3_unicode_ci'), comment='Имя програмировавшего терминал')
     sys_mon_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID системы мониторинга')
-    device_ca_id = Column(ForeignKey('Contragents.ca_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID контрагента')
+    contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID контрагента')
+    coment = Column(String(270, 'utf8mb3_unicode_ci'), comment='Коментарии')
 
-    device_ca = relationship('Contragent')
+    contragent = relationship('Contragent')
+    devices_brand = relationship('DevicesBrand')
     sys_mon = relationship('MonitoringSystem')
 
 
