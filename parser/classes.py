@@ -314,8 +314,8 @@ class Glonasssoft:
         """
         data = str({
             "imei": kwargs["imei"],
-            "start": kwargs["start"] + "T01:00:00.000Z",
-            "end": kwargs["start"] + "T23:50:00.000Z",
+            "start": kwargs["start"],
+            "end": kwargs["end"],
             })
         url = "https://hosting.glonasssoft.ru/api/commands"
         params = {

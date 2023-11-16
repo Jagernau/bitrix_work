@@ -3,6 +3,9 @@ import database.models as models
 from database.database import Database
 import re
 
+from data_entry import with_token_comand_put_get_glonasssoft
+from parser.classes import Glonasssoft
+from configurations import config
 
 def clear_func(value: str):
     if value == None:
@@ -37,6 +40,34 @@ def join_user_client():
     session.commit()
     session.close()
 
+
+def join_sim_from_comands_glonass_navtelecom():
+    """
+    Опрашивает терминалы navtelecom, которые в базе данных на глонассофт
+    какие ICCID у терминала и записывает в таблицу симок imei по ICCID
+    """
+    glonass = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    command_iccid = "*?ICCID"
+    token_glonass = str(glonass.token)
+    session = Database().session
+    objects = session.query(models.CaObject.imei).filter(models.CaObject.imei != None, models.CaObject.sys_mon_id == 1).all()
+    session.close()
+    imei_set = set()
+    for object in objects:
+        pattern = r"86\d{13}"
+        if re.search(pattern, str(object.imei)):
+            imei_set.add(object.imei)
+    list_imei = list(imei_set)
+    data = with_token_comand_put_get_glonasssoft(
+            token_glonass=token_glonass,
+            command_glonass=command_iccid,
+            imei_glonas="866192034294932",
+            )
+    return data
+
+
+
+print(join_sim_from_comands_glonass_navtelecom())
 
 # def get_residual_counter_id():
 #     session = Database().session

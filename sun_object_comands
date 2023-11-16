@@ -94,12 +94,12 @@ import json
         Значения для put_comand: \n
         Для glonass: \n
         Принимает json объекта \n
-        '{"imei": "IMEI", "command": "команда", "owner": "id клиента"}'
+        '{"imei": "IMEI", "command": "команда"}'
 
         Значения для get_report_comands: \n
         Для glonass: \n
         Принимает json объекта \n
-        '{"imei": "IMEI", "start": "2022-01-18"}'
+        '{"imei": "IMEI", "start": ""2022-06-01T21:00:00.000Z"", "end": ""2022-06-01T21:00:00.000Z""}'
 
         """
         )
