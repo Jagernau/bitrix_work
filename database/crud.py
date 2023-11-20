@@ -1,4 +1,6 @@
 from collections.abc import ItemsView
+
+from sqlalchemy.util import EMPTY_DICT
 import database.models as models
 from database.database import Database
 from sqlalchemy import and_, or_, update
@@ -467,7 +469,7 @@ def add_one_oneC_clients(clients):
             
             log_global(
                 section_type="1С_client",
-                edit_id=session.query(models.Contragent.id, models.Contragent.unique_onec_id).filter(models.Contragent.unique_onec_id == item["УникальныйИдентификаторКлиента"]).first()[0],
+                edit_id=session.query(models.Contragent.ca_id, models.Contragent.unique_onec_id).filter(models.Contragent.unique_onec_id == item["УникальныйИдентификаторКлиента"]).first()[0],
                 field="ca_name",
                 old_value="0",
                 new_value=item["Наименование"].replace('\xa0', ' '),
@@ -527,7 +529,7 @@ def update_one_oneC_client(clients):
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(ca_field_of_activity = i["НаправлениеБизнеса"]))
 
                 if e.key_manager != i["ОсновнойМенеджер"]:
-                    log_global(section_type="1С_client", action="update", sys_id=0, ca_id=e.ca_id, field='key_manager', old_value=e.key_manager, new_value=i["ОсновнойМенеджер"])
+                    log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='key_manager', old_value=e.key_manager, new_value=i["ОсновнойМенеджер"])
                     session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКлиента"]).values(key_manager = i["ОсновнойМенеджер"]))
 
                 if e.actual_address != i["ФактическийАдрес1"]:
