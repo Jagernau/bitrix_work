@@ -32,6 +32,7 @@ from utils.calculate import (
         generate_client_from_user
 )
 from database.crud import get_db_users_from_sysem
+from utils.help_utils import get_time_slice
 
 
 
@@ -561,7 +562,76 @@ def put_comand_to_glonasssoft(json_data):
             sourceid = str(config.SOURCE_GLONASS_ID),
             destinationid = json_data["imei"],
             taskdata = json_data["command"],
-            owner = json_data["owner"],
+            owner = str(config.GRAND_OWNER_GLONASS_ID),
             )
     return comand
 
+def get_comands_glonasssoft(json_data):
+    """"
+    Получить отчёт по командам глонасс
+    :param json_data:
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(2)
+    comand  = glonasssoft.get_terminal_comands(
+            token=token,
+            imei = json_data["imei"],
+            start = json_data["start"],
+            end = json_data["end"],
+            )
+    return comand
+
+def no_token_comand_put_get_glonasssoft(json_data):
+    """"
+    Объединить отчеты по командам глонасс
+    :param json_data:
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    token = str(glonasssoft.token)
+    time.sleep(1)
+    glonasssoft.put_terminal_comands(
+            token=token,
+            sourceid = str(config.SOURCE_GLONASS_ID),
+            destinationid = json_data["imei"],
+            taskdata = json_data["command"],
+            owner = str(config.GRAND_OWNER_GLONASS_ID),
+    )
+    time.sleep(8)
+    time_slice = get_time_slice()
+    get_data = glonasssoft.get_terminal_comands(
+            token=token,
+            imei = json_data["imei"],
+            start = time_slice[0],
+            end = time_slice[1],
+    )
+    return get_data
+            
+
+
+def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_glonass):
+    """"
+    Объединить отчеты по командам глонасс
+    :param json_data:
+    :return:
+    """
+    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))    
+    time.sleep(3)
+    glonasssoft.put_terminal_comands(
+            token=token_glonass,
+            sourceid = str(config.SOURCE_GLONASS_ID),
+            destinationid = imei_glonas,
+            taskdata = command_glonass,
+            owner = str(config.GRAND_OWNER_GLONASS_ID),
+    )
+    time.sleep(8)
+    time_slice = get_time_slice()
+    get_data = glonasssoft.get_terminal_comands(
+            token=token_glonass,
+            imei = imei_glonas,
+            start = time_slice[0],
+            end = time_slice[1],
+    )
+    return get_data

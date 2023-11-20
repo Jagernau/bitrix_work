@@ -305,6 +305,31 @@ class Glonasssoft:
         else:
             return f"Failed to connect terminal. Error: {response.status_code} {response.text}"
 
+    @staticmethod
+    def get_terminal_comands(*args, **kwargs):
+        """
+        Получение ответов от терминала
+        "imei": "string",
+        "start": "2022-01-18",
+        """
+        data = str({
+            "imei": kwargs["imei"],
+            "start": kwargs["start"],
+            "end": kwargs["end"],
+            })
+        url = "https://hosting.glonasssoft.ru/api/commands"
+        params = {
+            "q": data,
+            "sort": '[{"property":"createtime","direction":"DESC"}]'
+        }
+        headers = {
+            "X-Auth": kwargs["token"],
+        }
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Failed to connect terminal. Error: {response.status_code} {response.text}"
 
 
 class Fort:
