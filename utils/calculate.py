@@ -27,7 +27,7 @@ def get_fort_user(company_name: str, users: list, companies):
             for user in users:
                 if user["companyId"] == company["id"]:
                     user_list.append(user["name"])
-    return user_list
+    return user_list[0]
 
 
 def get_fort_company(obj_group_id:int, companies: list, grops_companies):
