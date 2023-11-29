@@ -16,7 +16,7 @@ def clear_func(value: str):
     return value.lower().replace("ип", "").replace("эдо", "").replace("ооо", "").replace("тензор", "")
 
 def bool_ratio(value1: str, value2: str):
-    if ratio(value1, value2) > 0.95:
+    if ratio(value1, value2) > 0.90:
         return True
     
 
@@ -66,8 +66,26 @@ def join_sim_from_comands_glonass_navtelecom():
     return data
 
 
+def join_devices_client():
+    session = Database().session
+    clients = session.query(models.Contragent.ca_id, models.Contragent.ca_name, models.Contragent.ca_shortname).all()
+    devices = session.query(models.Device).filter(models.Device.contragent_id == None).all()
+    session.close()
+    for client in clients:
+        for device in devices:
+            if device.client_name == client.ca_name \
+            or bool_ratio(
+                    clear_func(str(device.client_name)),
+                    clear_func(str(client.ca_name))) \
+            or bool_ratio(
+                    clear_func(str(device.client_name)),
+                    clear_func(str(client.ca_shortname))):
+                session.query(models.Device).filter(models.Device.device_id == device.device_id).update({
+                    "contragent_id": client.ca_id
+                })
 
-print(join_sim_from_comands_glonass_navtelecom())
+join_devices_client()
+
 
 # def get_residual_counter_id():
 #     session = Database().session

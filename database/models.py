@@ -1,6 +1,6 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, TIMESTAMP, text
-from sqlalchemy.dialects.mysql import TINYINT, VARCHAR
+from sqlalchemy import BigInteger, CheckConstraint, Column, Date, DateTime, ForeignKey, Index, Integer, String, TIMESTAMP, text
+from sqlalchemy.dialects.mysql import DATETIME, LONGTEXT, SMALLINT, TINYINT, VARCHAR
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -17,6 +17,29 @@ class CellOperator(Base):
     sun_price = Column(Integer, comment='Цена для Сантел')
 
 
+class AuthGroup(Base):
+    __tablename__ = 'auth_group'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(150, 'utf8mb3_unicode_ci'), nullable=False, unique=True)
+
+
+class AuthUser(Base):
+    __tablename__ = 'auth_user'
+
+    id = Column(Integer, primary_key=True)
+    password = Column(String(128, 'utf8mb3_unicode_ci'), nullable=False)
+    last_login = Column(DATETIME(fsp=6))
+    is_superuser = Column(TINYINT(1), nullable=False)
+    username = Column(String(150, 'utf8mb3_unicode_ci'), nullable=False, unique=True)
+    first_name = Column(String(150, 'utf8mb3_unicode_ci'), nullable=False)
+    last_name = Column(String(150, 'utf8mb3_unicode_ci'), nullable=False)
+    email = Column(String(254, 'utf8mb3_unicode_ci'), nullable=False)
+    is_staff = Column(TINYINT(1), nullable=False)
+    is_active = Column(TINYINT(1), nullable=False)
+    date_joined = Column(DATETIME(fsp=6), nullable=False)
+
+
 class DevicesCommand(Base):
     __tablename__ = 'devices_commands'
 
@@ -29,6 +52,34 @@ class DevicesVendor(Base):
 
     id = Column(Integer, primary_key=True)
     vendor_name = Column(String(35, 'utf8mb3_unicode_ci'))
+
+
+class DjangoContentType(Base):
+    __tablename__ = 'django_content_type'
+    __table_args__ = (
+        Index('django_content_type_app_label_model_76bd3d3b_uniq', 'app_label', 'model', unique=True),
+    )
+
+    id = Column(Integer, primary_key=True)
+    app_label = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False)
+    model = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False)
+
+
+class DjangoMigration(Base):
+    __tablename__ = 'django_migrations'
+
+    id = Column(BigInteger, primary_key=True)
+    app = Column(String(255, 'utf8mb3_unicode_ci'), nullable=False)
+    name = Column(String(255, 'utf8mb3_unicode_ci'), nullable=False)
+    applied = Column(DATETIME(fsp=6), nullable=False)
+
+
+class DjangoSession(Base):
+    __tablename__ = 'django_session'
+
+    session_key = Column(String(40, 'utf8mb3_unicode_ci'), primary_key=True)
+    session_data = Column(LONGTEXT, nullable=False)
+    expire_date = Column(DATETIME(fsp=6), nullable=False, index=True)
 
 
 class GlobalLogging(Base):
@@ -102,6 +153,34 @@ class Contragent(Base):
     ca_holding = relationship('Holding')
 
 
+class AuthPermission(Base):
+    __tablename__ = 'auth_permission'
+    __table_args__ = (
+        Index('auth_permission_content_type_id_codename_01ab375a_uniq', 'content_type_id', 'codename', unique=True),
+    )
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255, 'utf8mb3_unicode_ci'), nullable=False)
+    content_type_id = Column(ForeignKey('django_content_type.id'), nullable=False)
+    codename = Column(String(100, 'utf8mb3_unicode_ci'), nullable=False)
+
+    content_type = relationship('DjangoContentType')
+
+
+class AuthUserGroup(Base):
+    __tablename__ = 'auth_user_groups'
+    __table_args__ = (
+        Index('auth_user_groups_user_id_group_id_94350c0c_uniq', 'user_id', 'group_id', unique=True),
+    )
+
+    id = Column(BigInteger, primary_key=True)
+    user_id = Column(ForeignKey('auth_user.id'), nullable=False)
+    group_id = Column(ForeignKey('auth_group.id'), nullable=False, index=True)
+
+    group = relationship('AuthGroup')
+    user = relationship('AuthUser')
+
+
 class DevicesBrand(Base):
     __tablename__ = 'devices_brands'
 
@@ -110,6 +189,25 @@ class DevicesBrand(Base):
     devices_vendor_id = Column(ForeignKey('devices_vendor.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='Id Вендора терминалов')
 
     devices_vendor = relationship('DevicesVendor')
+
+
+class DjangoAdminLog(Base):
+    __tablename__ = 'django_admin_log'
+    __table_args__ = (
+        CheckConstraint('(`action_flag` >= 0)'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    action_time = Column(DATETIME(fsp=6), nullable=False)
+    object_id = Column(LONGTEXT)
+    object_repr = Column(String(200, 'utf8mb3_unicode_ci'), nullable=False)
+    action_flag = Column(SMALLINT, nullable=False)
+    change_message = Column(LONGTEXT, nullable=False)
+    content_type_id = Column(ForeignKey('django_content_type.id'), index=True)
+    user_id = Column(ForeignKey('auth_user.id'), nullable=False, index=True)
+
+    content_type = relationship('DjangoContentType')
+    user = relationship('AuthUser')
 
 
 class LoginUser(Base):
@@ -128,6 +226,34 @@ class LoginUser(Base):
 
     contragent = relationship('Contragent')
     system = relationship('MonitoringSystem')
+
+
+class AuthGroupPermission(Base):
+    __tablename__ = 'auth_group_permissions'
+    __table_args__ = (
+        Index('auth_group_permissions_group_id_permission_id_0cd325b0_uniq', 'group_id', 'permission_id', unique=True),
+    )
+
+    id = Column(BigInteger, primary_key=True)
+    group_id = Column(ForeignKey('auth_group.id'), nullable=False)
+    permission_id = Column(ForeignKey('auth_permission.id'), nullable=False, index=True)
+
+    group = relationship('AuthGroup')
+    permission = relationship('AuthPermission')
+
+
+class AuthUserUserPermission(Base):
+    __tablename__ = 'auth_user_user_permissions'
+    __table_args__ = (
+        Index('auth_user_user_permissions_user_id_permission_id_14a6b632_uniq', 'user_id', 'permission_id', unique=True),
+    )
+
+    id = Column(BigInteger, primary_key=True)
+    user_id = Column(ForeignKey('auth_user.id'), nullable=False)
+    permission_id = Column(ForeignKey('auth_permission.id'), nullable=False, index=True)
+
+    permission = relationship('AuthPermission')
+    user = relationship('AuthUser')
 
 
 class CaContact(Base):
@@ -210,13 +336,15 @@ class Device(Base):
     client_name = Column(String(300, 'utf8mb3_unicode_ci'), comment='Имя клиента')
     terminal_date = Column(DateTime, comment='Дата программирования терминала')
     devices_brand_id = Column(ForeignKey('devices_brands.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID Модели устройства ')
-    name_it = Column(String(15, 'utf8mb3_unicode_ci'), comment='Имя програмировавшего терминал')
+    name_it = Column(String(50, 'utf8mb3_unicode_ci'), comment='Имя програмировавшего терминал')
     sys_mon_id = Column(ForeignKey('monitoring_system.mon_sys_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID системы мониторинга')
     contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID контрагента')
     coment = Column(String(270, 'utf8mb3_unicode_ci'), comment='Коментарии')
+    itprogrammer_id = Column(ForeignKey('auth_user.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True)
 
     contragent = relationship('Contragent')
     devices_brand = relationship('DevicesBrand')
+    itprogrammer = relationship('AuthUser')
     sys_mon = relationship('MonitoringSystem')
 
 
@@ -283,7 +411,9 @@ class SimCard(Base):
     terminal_imei = Column(String(25, 'utf8mb3_unicode_ci'), comment='IMEI терминала в который вставлена симка')
     contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='SET NULL'), index=True, comment='ID контрагента')
     ca_uid = Column(String(100, 'utf8mb3_unicode_ci'), comment='Уникальный id контрагента')
+    itprogrammer_id = Column(ForeignKey('auth_user.id', ondelete='RESTRICT', onupdate='RESTRICT'), index=True, comment='ID сотрудника програмировавшего терминал')
 
     contragent = relationship('Contragent')
+    itprogrammer = relationship('AuthUser')
     Cell_operator = relationship('CellOperator')
     sim_device = relationship('Device')
