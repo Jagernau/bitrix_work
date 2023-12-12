@@ -84,7 +84,88 @@ def join_devices_client():
                     "contragent_id": client.ca_id
                 })
 
-join_devices_client()
+
+
+pattern_day = r"\d{4}-\d{2}-(\d{2})\s\d{2}:\d{2}:\d{2}"
+patern_hour = r"\d{4}-\d{2}-\d{2}\s(\d{2}):\d{2}:\d{2}"
+patern_month = r"\d{4}-(\d{2})-\d{2}\s\d{2}:\d{2}:\d{2}"
+pattern_year = r"(\d{4})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}"
+
+def clean_date_device():
+    session = Database().session
+    devices_date = session.query(
+            models.Device.terminal_date,
+            models.Device.device_id
+            ).filter(
+                models.Device.terminal_date != None
+            ).all()
+    session.close()
+    for i in devices_date:
+        search_hour = re.search(patern_hour, str(i[0]))
+        search_day = re.search(pattern_day, str(i[0]))
+        search_month = re.search(patern_month, str(i[0]))
+        search_year = re.search(pattern_year, str(i[0]))
+        day = search_day.group(1)
+        hour = search_hour.group(1)
+        month = search_month.group(1)
+        year_full = search_year.group(1)
+        year = year_full[2:4]
+        if int(day) == 20 and int(hour) == 19:
+            result = f"{day}{hour}-{month}-{year} 11:00:00"
+            session.query(models.Device).filter(models.Device.device_id == i[1]).update({
+                "terminal_date": result
+            })
+    session.commit()
+    session.close()
+
+
+
+
+def clean_date_simcards():
+    session = Database().session
+    sim_date = session.query(
+            models.SimCard.sim_date,
+            models.SimCard.sim_id
+            ).filter(
+                models.SimCard.sim_date != None
+            ).all()
+    session.close()
+    for i in sim_date:
+        search_hour = re.search(patern_hour, str(i[0]))
+        search_day = re.search(pattern_day, str(i[0]))
+        search_month = re.search(patern_month, str(i[0]))
+        search_year = re.search(pattern_year, str(i[0]))
+        day = search_day.group(1)
+        hour = search_hour.group(1)
+        month = search_month.group(1)
+        year_full = search_year.group(1)
+        year = year_full[2:4]
+        if int(day) == 20 and int(hour) == 20:
+            result = f"{day}{hour}-{month}-{year} 11:00:00"
+            session.query(models.SimCard).filter(models.SimCard.sim_id == i[1]).update({
+                "sim_date": result
+            })
+    session.commit()
+    session.close()
+    
+
+
+
+# for i in clean_date_device():
+#     if i[0] == None:
+#         continue
+#     search_hour = re.search(patern_hour, str(i[0]))
+#     search_day = re.search(pattern_day, str(i[0]))
+#     search_month = re.search(patern_month, str(i[0]))
+#     search_year = re.search(pattern_year, str(i[0]))
+#     day = search_day.group(1)
+#     hour = search_hour.group(1)
+#     month = search_month.group(1)
+#     year_full = search_year.group(1)
+#     year = year_full[2:4]
+#
+#     if int(day) == 20 and int(hour) == 23:
+#         print(f"{day}{hour}-{month}-{year}:11:00:00")
 
 
 # def get_residual_counter_id():
