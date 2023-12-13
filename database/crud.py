@@ -423,13 +423,13 @@ def add_all_clients_oneC(clients):
     session = Database().session
     for i in clients:
         client = models.Contragent(
-            ca_name=i["Наименование"].replace('\xa0', ' '),
-            ca_shortname=i["НаименованиеПолное"].replace('\xa0', ' '),
-            ca_type=i["ЮрФизЛицо"].replace('\xa0', ' '),
+            ca_name=i["НаименованиеКонтрагент"].replace('\xa0', ' '),
+            ca_shortname=i["НаименованиеПолноеКонтрагент"].replace('\xa0', ' '),
+            ca_type=i["ЮрФизЛицоКонтрагент"].replace('\xa0', ' '),
             ca_inn=i["ИНН"],
             ca_kpp=i["КПП"],
             ca_field_of_activity = i["НаправлениеБизнеса"],
-            unique_onec_id = i["УникальныйИдентификаторКлиента"],
+            unique_onec_id = i["УникальныйИдентификаторКонтрагента"],
             registration_date = i["ДатаРегистрации"].split("T")[0],
             key_manager = i["ОсновнойМенеджер"],
             actual_address = i["ФактическийАдрес1"],

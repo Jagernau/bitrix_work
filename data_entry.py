@@ -108,7 +108,7 @@ def merge_wialon_host_data():
     
     wialon_host_db_users = get_db_users_from_sysem(3)
     
-    wialon_data = get_wialin_host_units_users(str(config.WIALON_HOST_TOKEN))
+    wialon_data = get_wialin_host_units_users(str(config.TEST_IT_WHOST_TOKEN))
     units = wialon_data[0]["items"]
     users = wialon_data[1]["items"]
     result = []
@@ -635,3 +635,13 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
             end = time_slice[1],
     )
     return get_data
+
+def get_new_onec_clients():
+    onec = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
+    data = onec.get_clients()
+    return data
+
+# clients = get_new_onec_clients()
+# with open("actual_clients.json", "w") as file:
+#     json.dump(clients, file, indent=3, ensure_ascii=False)
+# print("GOOD")    
