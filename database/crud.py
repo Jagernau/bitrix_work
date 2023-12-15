@@ -423,13 +423,13 @@ def add_all_clients_oneC(clients):
     session = Database().session
     for i in clients:
         client = models.Contragent(
-            ca_name=i["НаименованиеКонтрагент"].replace('\xa0', ' '),
-            ca_shortname=i["НаименованиеПолноеКонтрагент"].replace('\xa0', ' '),
-            ca_type=i["ЮрФизЛицоКонтрагент"].replace('\xa0', ' '),
+            ca_name=i["НаименованиеПартнер"].replace('\xa0', ' '),
+            ca_shortname=i["НаименованиеПолноеПартнер"].replace('\xa0', ' '),
+            ca_type=i["ЮрФизЛицоПартнер"].replace('\xa0', ' '),
             ca_inn=i["ИНН"],
             ca_kpp=i["КПП"],
             ca_field_of_activity = i["НаправлениеБизнеса"],
-            unique_onec_id = i["УникальныйИдентификаторКонтрагента"],
+            unique_onec_id = i["УникальныйИдентификаторПартнера"],
             registration_date = i["ДатаРегистрации"].split("T")[0],
             key_manager = i["ОсновнойМенеджер"],
             actual_address = i["ФактическийАдрес1"],
@@ -448,15 +448,15 @@ def add_one_oneC_clients(clients):
     for i in clients_in_db:
         all_id_from_db.add(i[0])
     for item in clients:
-        if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
+        if item["УникальныйИдентификаторПартнера"] not in all_id_from_db:
             one_client = models.Contragent(
-                ca_name=item["НаименованиеКонтрагент"].replace('\xa0', ' '),
-                ca_shortname=item["НаименованиеПолноеКонтрагент"].replace('\xa0', ' '),
-                ca_type=item["ЮрФизЛицоКонтрагент"].replace('\xa0', ' '),
+                ca_name=item["НаименованиеПартнер"].replace('\xa0', ' '),
+                ca_shortname=item["НаименованиеПолноеПартнер"].replace('\xa0', ' '),
+                ca_type=item["ЮрФизЛицоПартнер"].replace('\xa0', ' '),
                 ca_inn=item["ИНН"],
                 ca_kpp=item["КПП"],
                 ca_field_of_activity = item["НаправлениеБизнеса"],
-                unique_onec_id = item["УникальныйИдентификаторКонтрагента"],
+                unique_onec_id = item["УникальныйИдентификаторПартнера"],
                 registration_date = item["ДатаРегистрации"].split("T")[0],
                 key_manager = item["ОсновнойМенеджер"],
                 actual_address = item["ФактическийАдрес1"],
@@ -469,10 +469,10 @@ def add_one_oneC_clients(clients):
             
             log_global(
                 section_type="1С_client",
-                edit_id=session.query(models.Contragent.ca_id, models.Contragent.unique_onec_id).filter(models.Contragent.unique_onec_id == item["УникальныйИдентификаторКонтрагента"]).first()[0],
+                edit_id=session.query(models.Contragent.ca_id, models.Contragent.unique_onec_id).filter(models.Contragent.unique_onec_id == item["УникальныйИдентификаторПартнера"]).first()[0],
                 field="ca_name",
                 old_value="0",
-                new_value=item["НаименованиеКонтрагент"].replace('\xa0', ' '),
+                new_value=item["НаименованиеПартнер"].replace('\xa0', ' '),
                 action="add",
                 sys_id=0,
             )
@@ -488,7 +488,7 @@ def delete_one_oneC_client(clients):
         all_id_db_clients.add(i[0])
     all_id_oneC = set()
     for item in clients:
-        all_id_oneC.add(item["УникальныйИдентификаторКонтрагента"])
+        all_id_oneC.add(item["УникальныйИдентификаторПартнера"])
     for id_ in all_id_db_clients:
         if id_ not in all_id_oneC:
             session.query(models.Contragent).filter(models.Contragent.unique_onec_id == id_).delete()
@@ -502,43 +502,43 @@ def update_one_oneC_client(clients):
     clients_in_db = session.query(models.Contragent)
     for i in clients:
         for e in clients_in_db:
-            if i["УникальныйИдентификаторКонтрагента"] == e.unique_onec_id:
+            if i["УникальныйИдентификаторПартнера"] == e.unique_onec_id:
 
-                if str(e.ca_name).replace('\xa0', ' ') != i["НаименованиеКонтрагент"].replace('\xa0', ' '):
-                    log_global(section_type="1С_client", edit_id=e.ca_id, field='ca_name', old_value=e.ca_name, new_value=i["НаименованиеКонтрагент"].replace('\xa0', ' '), action="update", sys_id=0) 
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(ca_name = i["НаименованиеКонтрагент"].replace('\xa0', ' ')))
+                if str(e.ca_name).replace('\xa0', ' ') != i["НаименованиеПартнер"].replace('\xa0', ' '):
+                    log_global(section_type="1С_client", edit_id=e.ca_id, field='ca_name', old_value=e.ca_name, new_value=i["НаименованиеПартнер"].replace('\xa0', ' '), action="update", sys_id=0) 
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(ca_name = i["НаименованиеПартнер"].replace('\xa0', ' ')))
 
-                if str(e.ca_shortname).replace('\xa0', ' ') != i["НаименованиеПолноеКонтрагент"].replace('\xa0', ' '):
-                    log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='ca_shortname', old_value=e.ca_shortname, new_value=i["НаименованиеПолноеКонтрагент"].replace('\xa0', ' '))
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(ca_shortname = i["НаименованиеПолноеКонтрагент"].replace('\xa0', ' ')))
+                if str(e.ca_shortname).replace('\xa0', ' ') != i["НаименованиеПолноеПартнер"].replace('\xa0', ' '):
+                    log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='ca_shortname', old_value=e.ca_shortname, new_value=i["НаименованиеПолноеПартнер"].replace('\xa0', ' '))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(ca_shortname = i["НаименованиеПолноеПартнер"].replace('\xa0', ' ')))
 
-                if str(e.ca_type).replace('\xa0', ' ') != i["ЮрФизЛицоКонтрагент"].replace('\xa0', ' '):
-                    log_global(section_type="1С_client", action="update", sys_id=0,edit_id=e.ca_id, field='ca_type', old_value=e.ca_type, new_value=i["ЮрФизЛицоКонтрагент"].replace('\xa0', ' '))
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(ca_type = i["ЮрФизЛицоКонтрагент"].replace('\xa0', ' ')))
+                if str(e.ca_type).replace('\xa0', ' ') != i["ЮрФизЛицоПартнер"].replace('\xa0', ' '):
+                    log_global(section_type="1С_client", action="update", sys_id=0,edit_id=e.ca_id, field='ca_type', old_value=e.ca_type, new_value=i["ЮрФизЛицоПартнер"].replace('\xa0', ' '))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(ca_type = i["ЮрФизЛицоПартнер"].replace('\xa0', ' ')))
 
                 if e.ca_inn != i["ИНН"]:
                     log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='ca_inn', old_value=e.ca_inn, new_value=i["ИНН"])
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(ca_inn = i["ИНН"]))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(ca_inn = i["ИНН"]))
 
                 if e.ca_kpp != i["КПП"]:
                     log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='ca_kpp', old_value=e.ca_kpp, new_value=i["КПП"])
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(ca_kpp = i["КПП"]))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(ca_kpp = i["КПП"]))
 
                 if e.ca_field_of_activity != i["НаправлениеБизнеса"]:
                     log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='ca_field_of_activity', old_value=e.ca_field_of_activity, new_value=i["НаправлениеБизнеса"])
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(ca_field_of_activity = i["НаправлениеБизнеса"]))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(ca_field_of_activity = i["НаправлениеБизнеса"]))
 
                 if e.key_manager != i["ОсновнойМенеджер"]:
                     log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='key_manager', old_value=e.key_manager, new_value=i["ОсновнойМенеджер"])
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(key_manager = i["ОсновнойМенеджер"]))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(key_manager = i["ОсновнойМенеджер"]))
 
                 if e.actual_address != i["ФактическийАдрес1"]:
                     log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='actual_address', old_value=e.actual_address, new_value=i["ФактическийАдрес1"])
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(actual_address = i["ФактическийАдрес1"]))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(actual_address = i["ФактическийАдрес1"]))
 
                 if e.registered_office != i["ЮридическийАдрес1"]:
                     log_global(section_type="1С_client", action="update", sys_id=0, edit_id=e.ca_id, field='registered_office', old_value=e.registered_office, new_value=i["ЮридическийАдрес1"])
-                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторКонтрагента"]).values(registered_office = i["ЮридическийАдрес1"]))
+                    session.execute(update(models.Contragent).where(models.Contragent.unique_onec_id == i["УникальныйИдентификаторПартнера"]).values(registered_office = i["ЮридическийАдрес1"]))
 
     session.commit()
     session.close()
