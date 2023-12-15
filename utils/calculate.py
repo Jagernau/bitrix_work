@@ -32,13 +32,43 @@ def get_fort_user(company_name: str, users: list, companies):
     else:
         return "НЕ ЗАПОЛНЕНО"
 
+def get_fort_user_by_id(company_id, users: list, company_group):
+    user_dict = {
+            f"{company_group}": None,
+            0: None,
+            1: None,
+            2: None,
+            3: None,
+            4: None,
+            5: None,
+            6: None,
+            7: None,
+            8: None,
+            9: None,
+            10: None,
+            }
+    count = 0
+    for user in users:
+        if user["companyId"] == company_id and user["email"] == company_group:
+            user_dict[f"{company_group}"] = user["name"]
+
+        if user["companyId"] == company_id:
+            user_dict[count] = user["name"]
+            count += 1
+                            
+    if user_dict[f"{company_group}"] != None:
+        return user_dict[f"{company_group}"]
+    else:
+        return user_dict[0]
+
+        
 
 def get_fort_company(obj_group_id:int, companies: list, grops_companies):
     for group_company in grops_companies:
         if group_company["id"] == obj_group_id and group_company["companyId"] != 0:
             for company in companies:
                 if company["id"] == group_company["companyId"]:
-                    return company["name"]
+                    return company["id"]
 
         if group_company["id"] == obj_group_id and group_company["companyId"] == 0:
             parent = group_company["parentGroupId"]
@@ -46,7 +76,7 @@ def get_fort_company(obj_group_id:int, companies: list, grops_companies):
                 if group_company["id"] == parent:
                     for company in companies:
                         if company["id"] == group_company["companyId"]:
-                            return company["name"]
+                            return company["id"]
 
 
 def get_fort_company_group(obj_group_id:int, grops_companies):

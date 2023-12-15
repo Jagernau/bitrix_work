@@ -29,7 +29,8 @@ from utils.calculate import (
         generate_scout_user, 
         generate_era_company,
         generate_era_user,
-        generate_client_from_user
+        generate_client_from_user,
+        get_fort_user_by_id,
 )
 from database.crud import get_db_users_from_sysem
 from utils.help_utils import get_time_slice
@@ -98,10 +99,25 @@ def merge_fort_data():
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(2)
         marge["object_status_id"] = get_status(i["name"])
-        marge["user"] = str(get_fort_user(marge["owner_agent"], users, companies))  
+        
+        login = ""
+        company_id = get_fort_company(
+                i["groupId"],
+                companies,
+                groups_companies
+                )
+        login = get_fort_user_by_id(company_id, users, marge["owner_agent"])
+
+        marge["user"] = login
         marge["parent_id"] = i["groupId"]
         result.append(marge)
     return result
+
+
+fort_data = merge_fort_data()
+with open("marge_fort.json", "w") as outfile:
+    json.dump(fort_data, outfile, indent=3, ensure_ascii=False)
+
 
 
 def merge_wialon_host_data():
