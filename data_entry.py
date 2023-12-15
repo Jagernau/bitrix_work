@@ -114,10 +114,6 @@ def merge_fort_data():
     return result
 
 
-fort_data = merge_fort_data()
-with open("marge_fort.json", "w") as outfile:
-    json.dump(fort_data, outfile, indent=3, ensure_ascii=False)
-
 
 
 def merge_wialon_host_data():
