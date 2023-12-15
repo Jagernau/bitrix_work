@@ -636,11 +636,11 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
     )
     return get_data
 
-def get_new_onec_clients():
-    onec = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
-    data = onec.get_clients()
-    return data
-
+# def get_new_onec_clients():
+#     onec = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
+#     data = onec.get_clients()
+#     return data
+#
 # clients = get_new_onec_clients()
 # with open("actual_clients.json", "w") as file:
 #     json.dump(clients, file, indent=3, ensure_ascii=False)
