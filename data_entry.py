@@ -128,10 +128,7 @@ def merge_wialon_host_data():
         marge = {}
         marge["id_in_system"] = str(i["id"])
         marge["name"] = emoji.demojize(i["nm"])
-        if get_wialon_imei(i["flds"]) != None:
-            marge["imei"] = get_wialon_imei(i["flds"])
-        else:
-            marge["imei"] = None
+        marge["imei"] = str(i["uid"])
         # if get_wialon_agent(i["flds"]) != None:
         #     marge["owner_agent"] = get_wialon_agent(i["flds"])
         # else:
