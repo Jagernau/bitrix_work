@@ -129,10 +129,6 @@ def merge_wialon_host_data():
         marge["id_in_system"] = str(i["id"])
         marge["name"] = emoji.demojize(i["nm"])
         marge["imei"] = str(i["uid"])
-        # if get_wialon_agent(i["flds"]) != None:
-        #     marge["owner_agent"] = get_wialon_agent(i["flds"])
-        # else:
-        #     marge["owner_agent"] = None
         marge["owner_agent"] = generate_client_from_user(
                 get_wialon_user(i["crt"], users),
                 wialon_host_db_users
@@ -233,7 +229,7 @@ def merge_era_data():
         marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(5)
         marge["object_status_id"] = get_status(i.name)
-        marge["user"] = generate_era_user(i.parentGroupId, users)
+        marge["user"] = generate_era_user(i.parentGroupId, users, groups)
         marge["parent_id"] = i.parentGroupId
         result.append(marge)
     return result

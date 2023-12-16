@@ -139,10 +139,21 @@ def generate_era_company(group_id: str, companies):
             return company.title
 
 
-def generate_era_user(group_id, users):
+def generate_era_user(group_id, users, groups):
+    result = "НЕ ЗАПОЛНЕНО"
     for user in users:
         if user.parentGroupId == group_id:
-            return user.login
+            result = user.login
+        if result == "НЕ ЗАПОЛНЕНО":
+            if group_id in user.groupLink:
+                result = user.login
+    if result == "НЕ ЗАПОЛНЕНО":
+        for user in users:
+            for group in groups:
+                if group.id == group_id:
+                    if group.parentGroupId == user.parentGroupId:
+                        result = user.login
+    return result
 
 
 
