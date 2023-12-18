@@ -7,7 +7,6 @@ from data_entry import with_token_comand_put_get_glonasssoft
 from parser.classes import Glonasssoft
 from configurations import config
 from datetime import date
-from datetime import datetime as dat
 
 def clear_func(value: str):
     if value == None:
@@ -164,7 +163,6 @@ def get_terminal_address():
     session.close()
     imei_set = set()
 
-    text_data = ""
 
     for object_ in objects:
         pattern = r"86\d{13}"
@@ -178,20 +176,16 @@ def get_terminal_address():
                 imei_glonas=str(imei),
                 )
         if data[0]["status"] == True:
+            with open(f"call terminals.txt", "a") as file:
+                file.write(f"{imei}\n")
             answer = data[0]["answer"]
-            ip_addresses = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', str(answer))
-            for i in ip_addresses:
-                if i == '176.9.36.169':
-                    text_data += f"{imei} --- {i}\n"
+            ip_addresses = '176.9.36.169'
+            if ip_addresses in answer:
+                with open(f"terminal_adress.txt", "a") as file:
+                    file.write(f"{imei}\n")
 
-    with open(f"{str(date.today())}_terminal_adress.txt", "w") as file:
-        file.write(text_data)
     
 
-
-print(f"Start {dat.now()}")
-get_terminal_address()
-print(f"Start {dat.now()}")
 
 # for i in clean_date_device():
 #     if i[0] == None:
