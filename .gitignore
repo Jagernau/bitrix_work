@@ -161,3 +161,4 @@ cython_debug/
 .json
 *.json
 log.txt
+*_terminal_adress.txt
