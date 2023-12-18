@@ -6,6 +6,8 @@ import re
 from data_entry import with_token_comand_put_get_glonasssoft
 from parser.classes import Glonasssoft
 from configurations import config
+from datetime import date
+from datetime import datetime as dat
 
 def clear_func(value: str):
     if value == None:
@@ -149,7 +151,47 @@ def clean_date_simcards():
     session.close()
     
 
+def get_terminal_address():
+    """
+    Опрашивает терминалы navtelecom, которые в базе данных на глонассофт
+    какие adress у терминалов
+    """
+    glonass = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    command_iccid = "*!READ TRANS:SRV1,SRV2,SR3 (SMS/TCP)"
+    token_glonass = str(glonass.token)
+    session = Database().session
+    objects = session.query(models.CaObject.imei).filter(models.CaObject.imei != None, models.CaObject.sys_mon_id == 1).all()
+    session.close()
+    imei_set = set()
 
+    text_data = ""
+
+    for object_ in objects:
+        pattern = r"86\d{13}"
+        if re.search(pattern, str(object_.imei)):
+            imei_set.add(object_.imei)
+    list_imei = list(imei_set)
+    for imei in list_imei:
+        data = with_token_comand_put_get_glonasssoft(
+                token_glonass=token_glonass,
+                command_glonass=command_iccid,
+                imei_glonas=str(imei),
+                )
+        if data[0]["status"] == True:
+            answer = data[0]["answer"]
+            ip_addresses = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', str(answer))
+            for i in ip_addresses:
+                if i == '176.9.36.169':
+                    text_data += f"{imei} --- {i}\n"
+
+    with open(f"{str(date.today())}_terminal_adress.txt", "w") as file:
+        file.write(text_data)
+    
+
+
+print(f"Start {dat.now()}")
+get_terminal_address()
+print(f"Start {dat.now()}")
 
 # for i in clean_date_device():
 #     if i[0] == None:
