@@ -6,7 +6,7 @@ import re
 from data_entry import with_token_comand_put_get_glonasssoft
 from parser.classes import Glonasssoft
 from configurations import config
-from datetime import date
+from datetime import datetime
 
 def clear_func(value: str):
     if value == None:
@@ -185,7 +185,38 @@ def get_terminal_address():
                     file.write(f"{imei}\n")
 
     
+def get_terminal_models():
+    """
+    Опрашивает терминалы navtelecom, которые в базе данных на глонассофт
+    какие models
+    """
+    glonass = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    command_iccid = "*?V"
+    token_glonass = str(glonass.token)
+    session = Database().session
+    objects = session.query(models.CaObject.imei).filter(models.CaObject.imei != None, models.CaObject.sys_mon_id == 1).all()
+    session.close()
+    imei_set = set()
 
+    for object_ in objects:
+        pattern = r"86\d{13}"
+        if re.search(pattern, str(object_.imei)):
+            imei_set.add(object_.imei)
+    list_imei = list(imei_set)
+    for imei in list_imei:
+        data = with_token_comand_put_get_glonasssoft(
+                token_glonass=token_glonass,
+                command_glonass=command_iccid,
+                imei_glonas=str(imei),
+                )
+        if data[0]["status"] == True:
+            with open(f"call_models_terminals.txt", "a") as file:
+                file.write(f"{imei}\n")
+            answer = str(data[0]["answer"]).split(":")[1]
+            with open(f"terminal_models.txt", "a") as file:
+                file.write(f"{imei};{answer};{datetime.now()}\n")
+
+get_terminal_models()
 
 # for i in clean_date_device():
 #     if i[0] == None:
