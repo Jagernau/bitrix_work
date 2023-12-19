@@ -220,12 +220,20 @@ def get_terminal_models():
                 command_glonass=command_iccid,
                 imei_glonas=str(imei),
                 )
-        if data[0]["status"] == True:
-            with open(f"call_models_terminals_2.txt", "a") as file:
-                file.write(f"{imei}\n")
-            answer = re.findall(r'S-\d{4}',str(data[0]["answer"]))
+        try:
+            if len(data) >= 1:
+                if data[0]["status"] == True:
+                    answer = re.findall(r'S-\d{4}',str(data[0]["answer"]))
+                    with open(f"terminal_models_3.txt", "a") as file:
+                        file.write(f"{imei};{answer};{datetime.now()}\n")
+
+                    with open(f"call_models_terminals_2.txt", "a") as file:
+                        file.write(f"{imei}\n")
+        except:
             with open(f"terminal_models_3.txt", "a") as file:
-                file.write(f"{imei};{answer};{datetime.now()}\n")
+                file.write(f"сбой при сканировании {imei}\n")
+            continue
+
 
 get_terminal_models()
 
