@@ -204,6 +204,8 @@ def get_terminal_models():
     objects = session.query(models.CaObject.imei).filter(models.CaObject.imei != None, models.CaObject.sys_mon_id == 1).all()
     session.close()
     imei_set = set()
+
+    print("Начато")
     
     for object_ in objects:
         pattern = r"86\d{13}"
@@ -233,6 +235,8 @@ def get_terminal_models():
             with open(f"terminal_models_3.txt", "a") as file:
                 file.write(f"сбой при сканировании {imei}\n")
             continue
+
+    print("Успешно оконченно")
 
 
 get_terminal_models()

@@ -164,4 +164,5 @@ log.txt
 *_terminal_adress.txt
 *.txt
 .txt
-
+terminal_models.txt
+call_models_terminals.txt
