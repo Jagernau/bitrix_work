@@ -115,7 +115,6 @@ def merge_fort_data():
 
 
 
-
 def merge_wialon_host_data():
     
     wialon_host_db_users = get_db_users_from_sysem(3)
@@ -159,14 +158,7 @@ def merge_wialon_local_data():
         marge = {}
         marge["id_in_system"] = str(i["id"])
         marge["name"] = emoji.demojize(i["nm"])
-        if get_wialon_imei(i["flds"]) != None:
-            marge["imei"] = get_wialon_imei(i["flds"])
-        else:
-            marge["imei"] = None
-        # if get_wialon_agent(i["flds"]) != None:
-        #     marge["owner_agent"] = get_wialon_agent(i["flds"])
-        # else:
-        #     marge["owner_agent"] = None
+        marge["imei"] = str(i["uid"])
         marge["owner_agent"] = generate_client_from_user(
                 get_wialon_user(i["crt"], users),
                 wialon_local_db_users
@@ -183,6 +175,7 @@ def merge_wialon_local_data():
         marge["parent_id"] = i["crt"]
         result.append(marge)
     return result
+
 
 
 def merge_scout_data():

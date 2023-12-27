@@ -49,7 +49,7 @@ def get_fort_user_by_id(company_id, users: list, company_group):
             }
     count = 0
     for user in users:
-        if user["companyId"] == company_id and user["email"] == company_group:
+        if user["companyId"] == company_id and user["description"] == company_group:
             user_dict[f"{company_group}"] = user["name"]
 
         if user["companyId"] == company_id:
