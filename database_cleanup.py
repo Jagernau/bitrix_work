@@ -238,7 +238,7 @@ def get_terminal_models():
     print("Успешно оконченно")
 
 
-get_terminal_models()
+#get_terminal_models()
 
 
 
