@@ -6,7 +6,7 @@ import re
 from data_entry import with_token_comand_put_get_glonasssoft
 from parser.classes import Glonasssoft
 from configurations import config
-from datetime import date
+from datetime import datetime
 
 def clear_func(value: str):
     if value == None:
@@ -184,7 +184,63 @@ def get_terminal_address():
                 with open(f"terminal_adress.txt", "a") as file:
                     file.write(f"{imei}\n")
 
+def get_calls():
+    with open("call_models_terminals_2.txt", "r") as file:
+        result = file.read()
+        return result.split("\n")
+
+print(get_calls())
+
+
+def get_terminal_models():
+    """
+    Опрашивает терминалы navtelecom, которые в базе данных на глонассофт
+    какие models
+    """
+    glonass = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
+    command_iccid = "*?V"
+    token_glonass = str(glonass.token)
+    session = Database().session
+    objects = session.query(models.CaObject.imei).filter(models.CaObject.imei != None, models.CaObject.sys_mon_id == 1).all()
+    session.close()
+    imei_set = set()
+
+    print("Начато")
     
+    for object_ in objects:
+        pattern = r"86\d{13}"
+        if re.search(pattern, str(object_.imei)):
+            imei_set.add(object_.imei)
+
+    calls_imei = set(get_calls())
+    result_imeis = imei_set - calls_imei
+
+    list_imei = list(result_imeis)
+    for imei in list_imei:
+        data = with_token_comand_put_get_glonasssoft(
+                token_glonass=token_glonass,
+                command_glonass=command_iccid,
+                imei_glonas=str(imei),
+                )
+        try:
+            if len(data) >= 1:
+                if data[0]["status"] == True:
+                    answer = re.findall(r'S-\d{4}',str(data[0]["answer"]))
+                    with open(f"terminal_models_4.txt", "a") as file:
+                        file.write(f"{imei};{answer};{datetime.now()}\n")
+
+                    with open(f"call_models_terminals_2.txt", "a") as file:
+                        file.write(f"{imei}\n")
+        except:
+            with open(f"terminal_models_4.txt", "a") as file:
+                file.write(f"сбой при сканировании {imei}\n")
+            continue
+
+    print("Успешно оконченно")
+
+
+get_terminal_models()
+
 
 
 # for i in clean_date_device():
