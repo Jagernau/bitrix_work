@@ -181,8 +181,8 @@ def get_terminal_address():
             answer = data[0]["answer"]
             ip_addresses = '176.9.36.169'
             if ip_addresses in answer:
-                with open(f"terminal_adress.txt", "a") as file:
-                    file.write(f"{imei}\n")
+                with open(f"2_terminal_adress.txt", "a") as file:
+                    file.write(f"{imei};{ip_addresses};{datetime.now()}\n")
 
 def get_calls():
     with open("call_models_terminals_2.txt", "r") as file:
@@ -225,13 +225,13 @@ def get_terminal_models():
             if len(data) >= 1:
                 if data[0]["status"] == True:
                     answer = re.findall(r'S-\d{4}',str(data[0]["answer"]))
-                    with open(f"terminal_models_6.txt", "a") as file:
+                    with open(f"terminal_models_7.txt", "a") as file:
                         file.write(f"{imei};{answer};{datetime.now()}\n")
 
                     with open(f"call_models_terminals_2.txt", "a") as file:
                         file.write(f"{imei}\n")
         except:
-            with open(f"terminal_models_6.txt", "a") as file:
+            with open(f"terminal_models_7.txt", "a") as file:
                 file.write(f"сбой при сканировании {imei}\n")
             continue
 
@@ -239,7 +239,7 @@ def get_terminal_models():
 
 
 #get_terminal_models()
-
+get_terminal_address()
 
 
 # for i in clean_date_device():
