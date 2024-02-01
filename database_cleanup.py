@@ -239,7 +239,7 @@ def get_terminal_models():
 
 
 #get_terminal_models()
-get_terminal_address()
+#get_terminal_address()
 
 
 # for i in clean_date_device():
