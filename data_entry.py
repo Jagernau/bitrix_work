@@ -73,7 +73,6 @@ def merge_glonasssoft_data():
     return result
 
 
-
 def merge_fort_data():
     fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
     token = str(fort.token)
@@ -175,7 +174,6 @@ def merge_wialon_local_data():
         marge["parent_id"] = i["crt"]
         result.append(marge)
     return result
-
 
 
 def merge_scout_data():
