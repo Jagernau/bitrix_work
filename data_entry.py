@@ -34,7 +34,7 @@ from utils.calculate import (
 )
 from database.crud import get_db_users_from_sysem
 from utils.help_utils import get_time_slice
-
+from sim_api.classes import  BiLine
 
 
 import emoji
@@ -642,4 +642,19 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
 # clients = get_new_onec_clients()
 # with open("actual_clients.json", "w") as file:
 #     json.dump(clients, file, indent=3, ensure_ascii=False)
-# print("GOOD")    
+# print("GOOD")
+
+################################################
+# SimApi
+################################################
+def get_token_beeline():
+    bi_line = BiLine(
+            username=str(config.BILINE_USERNAME),
+            password=str(config.BILINE_PASSWORD),
+            client_id=str(config.BILINE_CLIENT_ID), 
+            client_secret=str(config.BILINE_CLIENT_SECRET)
+            )
+    token = bi_line.token
+    return token
+
+print(get_token_beeline())
