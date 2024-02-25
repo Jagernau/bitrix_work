@@ -225,7 +225,9 @@ def merge_era_data():
         result.append(marge)
     return result
 
-
+##########################################################
+# CREATE, UPDATE, DEL CLIENTS
+##########################################################
 def get_postgre_clients():
     sun = SunPostgres(str(config.SUNAPI_TOKEN))
     clients = sun.get_clients()
