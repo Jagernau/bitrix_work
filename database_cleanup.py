@@ -184,6 +184,8 @@ def get_terminal_address():
                 with open(f"2_terminal_adress.txt", "a") as file:
                     file.write(f"{imei};{ip_addresses};{datetime.now()}\n")
 
+
+
 def get_calls():
     with open("call_models_terminals_2.txt", "r") as file:
         result = file.read()

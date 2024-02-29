@@ -647,14 +647,14 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
 ################################################
 # SimApi
 ################################################
-def get_token_beeline():
-    bi_line = BiLine(
-            username=str(config.BILINE_USERNAME),
-            password=str(config.BILINE_PASSWORD),
-            client_id=str(config.BILINE_CLIENT_ID), 
-            client_secret=str(config.BILINE_CLIENT_SECRET)
-            )
-    token = bi_line.token
-    return token
-
-print(get_token_beeline())
+# def get_token_beeline():
+#     bi_line = BiLine(
+#             username=str(config.BILINE_USERNAME),
+#             password=str(config.BILINE_PASSWORD),
+#             client_id=str(config.BILINE_CLIENT_ID), 
+#             client_secret=str(config.BILINE_CLIENT_SECRET)
+#             )
+#     token = bi_line.token
+#     return token
+#
+# print(get_token_beeline())
