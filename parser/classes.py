@@ -5,8 +5,9 @@ import datetime
 import sys
 sys.path.append('gen-py')
 
+import ssl
 from thrift import Thrift
-from thrift.transport import TSocket
+from thrift.transport import TSocket, TSSLSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
@@ -742,8 +743,12 @@ class Scout:
 
 def get_era_data(login: str, password: str, thrif_class_client):
 
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
     url = "monitoring.aoglonass.ru"
-    transport = TSocket.TSocket(url, 19990)
+    transport = TSSLSocket.TSSLSocket(url, 19991, ssl_context=ssl_context)
     transport = TTransport.TFramedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
     open = transport.open()

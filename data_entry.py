@@ -225,6 +225,7 @@ def merge_era_data():
         result.append(marge)
     return result
 
+
 ##########################################################
 # CREATE, UPDATE, DEL CLIENTS
 ##########################################################
