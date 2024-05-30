@@ -225,6 +225,8 @@ def merge_era_data():
         result.append(marge)
     return result
 
+#print(merge_era_data())
+
 ##########################################################
 # CREATE, UPDATE, DEL CLIENTS
 ##########################################################
@@ -640,7 +642,7 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
 #     return data
 #
 # clients = get_new_onec_clients()
-# with open("actual_clients.json", "w") as file:
+# with open("28_may_clients.json", "w") as file:
 #     json.dump(clients, file, indent=3, ensure_ascii=False)
 # print("GOOD")
 

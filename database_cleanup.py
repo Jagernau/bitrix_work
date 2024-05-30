@@ -7,6 +7,8 @@ from data_entry import with_token_comand_put_get_glonasssoft
 from parser.classes import Glonasssoft
 from configurations import config
 from datetime import datetime
+from tqdm import tqdm
+
 
 def clear_func(value: str):
     if value == None:
@@ -181,7 +183,7 @@ def get_terminal_address():
             answer = data[0]["answer"]
             ip_addresses = '176.9.36.169'
             if ip_addresses in answer:
-                with open(f"2_terminal_adress.txt", "a") as file:
+                with open(f"3_terminal_adress.txt", "a") as file:
                     file.write(f"{imei};{ip_addresses};{datetime.now()}\n")
 
 
