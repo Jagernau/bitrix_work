@@ -406,7 +406,6 @@ class SimCard(Base):
     sim_owner = Column(TINYINT(1), comment='Владелец сим (мы или клиент)')
     sim_device_id = Column(ForeignKey('devices.device_id'), index=True, comment='ID к девайсам(devices)')
     sim_date = Column(DateTime, comment='Дата регистрации сим')
-    name_it = Column(VARCHAR(100), comment='Имя активировавшего')
     status = Column(Integer, comment='Активность симки')
     terminal_imei = Column(String(25, 'utf8mb3_unicode_ci'), comment='IMEI терминала в который вставлена симка')
     contragent_id = Column(ForeignKey('Contragents.ca_id', ondelete='SET NULL', onupdate='SET NULL'), index=True, comment='ID контрагента')

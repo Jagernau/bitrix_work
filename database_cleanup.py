@@ -7,6 +7,8 @@ from data_entry import with_token_comand_put_get_glonasssoft
 from parser.classes import Glonasssoft
 from configurations import config
 from datetime import datetime
+import wor_kwith_files as wkf
+
 
 def clear_func(value: str):
     if value == None:
@@ -335,3 +337,28 @@ def get_terminal_models():
 #     return len(sims)
 # #
 # print(sim_residual_counter_id())
+def sim_corelation():
+    "назначает статус симок"
+    session = Database().session
+    db_sim_tele = session.query(models.SimCard).filter(
+            #models.SimCard.sim_iccid != None,
+            models.SimCard.sim_tel_number != None,
+            models.SimCard.status == 4,
+            models.SimCard.sim_cell_operator == 2
+    ).all()
+    session.close()
+    active_sim = set(wkf.decorator_status('Активен')(wkf.get_tele2_data))
+    for sim in db_sim_tele:
+        if sim.sim_tel_number in active_sim:
+            session.query(models.SimCard).filter(
+                    models.SimCard.sim_id == sim.sim_id,
+                    models.SimCard.status == 4,
+                    models.SimCard.sim_cell_operator == 2,
+                    models.SimCard.sim_tel_number == sim.sim_tel_number
+            ).update({
+                "status": 1
+            })
+            print(sim.sim_id, sim.sim_tel_number)
+    session.commit()
+    session.close()
+
