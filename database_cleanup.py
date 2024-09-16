@@ -25,6 +25,11 @@ def bool_ratio(value1: str, value2: str):
 
 
 def join_user_client():
+    """ 
+    Получает всех Юзеров из БД без имеющихся Клиентов
+    Получает всех Клиентов Имя и Короткое наименование
+    И если у Юзера сходится произвольное имя клиента с Клиентом на 75% то прикрепляется Контрагент 1С
+    """
     session = Database().session
     users = session.query(models.LoginUser).filter(models.LoginUser.contragent_id == None).all()
     clients = session.query(models.Contragent.ca_id, models.Contragent.ca_name, models.Contragent.ca_shortname).all()

@@ -457,7 +457,7 @@ def get_wialin_host_units_users(token: str):
     sdk = WialonSdk(
       is_development=True,
       scheme='https',
-      host='hst-api.wialon.com',
+      host='hst-api.wialon.host',
       port=0,
       session_id='',
       extra_params=""
@@ -500,7 +500,7 @@ def get_wialon_host_users(token: str):
     sdk = WialonSdk(
       is_development=True,
       scheme='https',
-      host='hst-api.wialon.com',
+      host='hst-api.wialon.host',
       port=0,
       session_id='',
       extra_params=""
@@ -529,7 +529,7 @@ def create_wialon_host_user(token, **kwargs):
     sdk = WialonSdk(
       is_development=True,
       scheme='https',
-      host='hst-api.wialon.com',
+      host='hst-api.wialon.host',
       port=0,
       session_id='',
       extra_params=""
@@ -551,7 +551,7 @@ def create_wialon_host_unit(token, **kwargs):
     sdk = WialonSdk(
       is_development=True,
       scheme='https',
-      host='hst-api.wialon.com',
+      host='hst-api.wialon.host',
       port=0,
       session_id='',
       extra_params=""
