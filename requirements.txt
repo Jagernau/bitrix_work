@@ -8,12 +8,13 @@ greenlet==2.0.2
 idna==3.4
 inflect==7.0.0
 Levenshtein==0.23.0
-mysql-connector-python==8.1.0
+mysql-connector-python==9.0.0
 numpy==1.26.2
 pandas==2.1.4
 protobuf==4.21.12
 pydantic==2.3.0
 pydantic_core==2.6.3
+PySocks==1.7.1
 python-dateutil==2.8.2
 python-dotenv==1.0.0
 python-Levenshtein==0.23.0
@@ -25,7 +26,7 @@ schedule==1.2.0
 simplejson==3.19.1
 six==1.16.0
 sqlacodegen==2.3.0.post1
-SQLAlchemy==1.4.49
+SQLAlchemy==1.4.54
 thrift==0.16.0
 tqdm==4.66.2
 typing_extensions==4.7.1

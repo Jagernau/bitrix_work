@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Создание обработчика для записи в файл
-file_handler = logging.FileHandler('log.txt')
+file_handler = logging.FileHandler('new_log.txt')
 file_handler.setLevel(logging.INFO)
 
 # Создание форматировщика
@@ -202,6 +202,9 @@ def job():
     except Exception as e:
         logger.error(f"В обновлении Эра возникла ошибка: {e}")
 
+
+
+##############################################################
 
     # try:
     #     glonass_clients = generate_glonass_client()
