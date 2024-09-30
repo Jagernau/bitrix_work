@@ -118,7 +118,8 @@ def add_one_object(marge_data: list):
                 old_value="0",
                 new_value=item["name"],
                 action="add",
-                sys_id=sys_id
+                sys_id=sys_id,
+                contragent_id=int(result) if result else None
             )
             session.commit()
             session.close()
@@ -164,7 +165,8 @@ def delete_one_object(marge_data: list):
                 old_value=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().object_name,
                 new_value="0",
                 action="delete",
-                sys_id=sys_id
+                sys_id=sys_id,
+                contragent_id=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().contragent_id
             )
             session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).delete()
     session.commit()

@@ -107,6 +107,7 @@ class GlobalLogging(Base):
     change_time = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
     sys_id = Column(Integer, comment='Система мониторинга')
     action = Column(VARCHAR(100), comment='добавление, изменение или удаление')
+    contragent_id = Column(Integer)
 
 
 class GuaranteeTerm(Base):
