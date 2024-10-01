@@ -21,5 +21,6 @@ def log_global(*args, **kwargs):
            new_value=kwargs["new_value"],
            action=kwargs["action"],
            sys_id=kwargs["sys_id"],
+           contragent_id=kwargs["contragent_id"] if kwargs.get("contragent_id") is not None else None
            )
     session.add(changes)
