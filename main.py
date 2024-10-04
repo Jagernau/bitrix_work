@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Создание обработчика для записи в файл
-file_handler = logging.FileHandler('01_10_log.txt')
+file_handler = logging.FileHandler('new_log.txt')
 file_handler.setLevel(logging.INFO)
 
 # Создание форматировщика
@@ -283,7 +283,7 @@ if __name__ == '__main__':
     # execution_time = end_time - start_time
     # print(f"Execution time: {execution_time} seconds")
 
-    schedule.every().day.at("18:20").do(job)
+    schedule.every().day.at("21:40").do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
