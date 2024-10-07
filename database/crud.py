@@ -207,6 +207,12 @@ def update_one_object(marge_data: list):
       
         for e in objects_in_db:
             if i["id_in_system"] == e.sys_mon_object_id:
+
+                contr_id = users_logins.filter(
+                    models.LoginUser.login == i["user"],
+                    )
+                result = contr_id.first().contragent_id if contr_id.first() else None
+
                 if i["name"] != e.object_name:
                     log_global(
                             section_type="object",
@@ -216,7 +222,7 @@ def update_one_object(marge_data: list):
                             new_value = i["name"], 
                             action = "update", 
                             sys_id = int(i["monitor_sys_id"]),
-                            contragent_id = int(e.contragent_id)
+                            contragent_id = result
                             )
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_name = i["name"]))
 
@@ -246,7 +252,7 @@ def update_one_object(marge_data: list):
                             new_value = i["object_status_id"],
                             action = "update", 
                             sys_id = int(i["monitor_sys_id"]),
-                            contragent_id = int(e.contragent_id),
+                            contragent_id = result,
                             )
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
 
@@ -267,10 +273,6 @@ def update_one_object(marge_data: list):
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
 
 
-                contr_id = users_logins.filter(
-                    models.LoginUser.login == i["user"],
-                    )
-                result = contr_id.first().contragent_id if contr_id.first() else None
                 if result != e.contragent_id:
                     log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = result, action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = result))
