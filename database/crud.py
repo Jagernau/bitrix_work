@@ -192,19 +192,20 @@ def update_one_object(marge_data: list):
             "parent_id": "123"
     """
     sys_id = marge_data[10]["monitor_sys_id"]
-    session = Database().session
-    objects_in_db = session.query(models.CaObject).filter(
-        models.CaObject.sys_mon_id == sys_id        
-    )
-    
-
-    users_logins = session.query(models.LoginUser).filter(
-        models.LoginUser.system_id == sys_id,
-        models.LoginUser.contragent_id != None
-    )
 
     for i in marge_data:
-      
+
+        session = Database().session
+        objects_in_db = session.query(models.CaObject).filter(
+            models.CaObject.sys_mon_id == sys_id        
+        )
+        
+
+        users_logins = session.query(models.LoginUser).filter(
+            models.LoginUser.system_id == sys_id,
+            models.LoginUser.contragent_id != None
+        )
+
         for e in objects_in_db:
             if i["id_in_system"] == e.sys_mon_object_id:
 
@@ -224,15 +225,27 @@ def update_one_object(marge_data: list):
                             sys_id = int(i["monitor_sys_id"]),
                             contragent_id = result
                             )
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_name = i["name"]))
+                    session.execute(
+                            update(models.CaObject)
+                            .where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"])
+                            .values(object_name = i["name"]))
+
+                    session.commit()
+
 
                 if str(i["imei"]) != str(e.imei):
                     log_global(section_type="object", edit_id = e.id, field = "imei", old_value = str(e.imei), new_value = str(i["imei"]), action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(imei = str(i["imei"])))
 
+                    session.commit()
+
+
                 if i["owner_agent"] != e.owner_contragent:
                     log_global(section_type="object", edit_id = e.id, field = "owner_agent", old_value = e.owner_contragent, new_value = i["owner_agent"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_contragent = i["owner_agent"]))
+
+                    session.commit()
+
 
                 #if i["created"] != e.object_created:
                     #log_objects(object_id = e.sys_mon_object_id, field = "created", old_value = e.object_created, new_value = i["created"], action = "update")
@@ -256,6 +269,9 @@ def update_one_object(marge_data: list):
                             )
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
 
+                    session.commit()
+
+
                 if i["user"] != e.owner_user:
                     log_global(
                             section_type="object", 
@@ -267,18 +283,22 @@ def update_one_object(marge_data: list):
                             sys_id = int(i["monitor_sys_id"])
                             )
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_user = i["user"]))
+                    session.commit()
+
 
                 if str(i["parent_id"]) != str(e.parent_id_sys):
                     log_global(section_type="object", edit_id = e.id, field = "parent_id", old_value = e.parent_id_sys, new_value = i["parent_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
 
+                    session.commit()
+
 
                 if result != e.contragent_id:
                     log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = result, action = "update", sys_id = int(i["monitor_sys_id"]))
                     session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = result))
+                    session.commit()
 
-    session.commit()
-    session.close()
+        session.close()
 
 
 ###################
