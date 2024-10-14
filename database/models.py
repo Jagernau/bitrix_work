@@ -305,6 +305,8 @@ class Contragent(Base):
     phone = Column(VARCHAR(200), comment='Телефон ')
     ca_uid_contragent = Column(String(100, 'utf8mb3_unicode_ci'), comment='УникальныйИдентификаторКонтрагента')
     ca_name_contragent = Column(String(255, 'utf8mb3_unicode_ci'), comment='НаименованиеКонтрагента')
+    service_manager = Column(String(100, 'utf8mb3_unicode_ci'), comment='Имя прикреплённого менеджера тех поддержки')
+
 
     ca_holding = relationship('Holding')
 

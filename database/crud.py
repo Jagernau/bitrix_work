@@ -498,8 +498,8 @@ def add_one_oneC_clients(clients):
                 registered_office = item["ЮридическийАдрес1"],
                 phone = item["Телефон"],
                 ca_uid_contragent = item["УникальныйИдентификаторКонтрагента"],
-                ca_name_contragent = item["НаименованиеКонтрагент"]
-
+                ca_name_contragent = item["НаименованиеКонтрагент"],
+                service_manager = item["СервисныйМенеджер"]
             )
             session.add(one_client)
             session.commit()
@@ -708,5 +708,19 @@ def update_one_oneC_client(clients):
 
 
 
+                if e.service_manager != i["СервисныйМенеджер"]:
+                    log_global(
+                            section_type="1C_client", 
+                            action="update", 
+                            sys_id=0, 
+                            edit_id=e.ca_id,
+                            field='service_manager', 
+                            old_value=e.service_manager,
+                            new_value=i["СервисныйМенеджер"])
+                    session.execute(
+                            update(models.Contragent)
+                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                            .values(service_manager = i["СервисныйМенеджер"]))
+                    session.commit()
         
         session.close()

@@ -642,7 +642,7 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
 #     return data
 #
 # clients = get_new_onec_clients()["Клиенты"]
-# with open("24_september_clients.json", "w") as file:
+# with open("14_october_clients.json", "w") as file:
 #     json.dump(clients, file, indent=3, ensure_ascii=False)
 # print("GOOD")
 
