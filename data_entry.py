@@ -62,9 +62,6 @@ def merge_glonasssoft_data():
         marge["name"] = i["number"]
         marge["imei"] = i["imei"]
         marge["owner_agent"] = [agent["name"] for agent in agents if i["owner"] in agent["id"]][0]
-        marge["created"] = datetime.strptime(str(i["created"].split(".")[0]), "%Y-%m-%dT%H:%M:%S")
-        marge["updated"] = datetime.strptime(str(i["updated"].split(".")[0]), "%Y-%m-%dT%H:%M:%S")
-        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(1)
         marge["object_status_id"] = get_status(i["number"])
         marge["user"] = get_glonas_user(i["owner"], users)
@@ -93,9 +90,6 @@ def merge_fort_data():
         marge["name"] = i["name"]
         marge["imei"] = i["IMEI"]
         marge["owner_agent"] = get_fort_company_group(i["groupId"], groups_companies)
-        marge["created"] = None
-        marge["updated"] = None
-        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(2)
         marge["object_status_id"] = get_status(i["name"])
         
@@ -131,9 +125,6 @@ def merge_wialon_host_data():
                 get_wialon_user(i["crt"], users),
                 wialon_host_db_users
                 )
-        marge["created"] = None
-        marge["updated"] = None
-        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(3)
         if i["act"] == 0:
             marge["object_status_id"] = int(7)
@@ -162,9 +153,6 @@ def merge_wialon_local_data():
                 get_wialon_user(i["crt"], users),
                 wialon_local_db_users
         )
-        marge["created"] = None
-        marge["updated"] = None
-        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(4)
         if i["act"] == 0:
             marge["object_status_id"] = int(7)
@@ -190,9 +178,6 @@ def merge_scout_data():
         marge["name"] = i["Name"]
         marge["imei"] = None
         marge["owner_agent"] = i["Description"]
-        marge["created"] = None
-        marge["updated"] = None
-        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(6)
         marge["object_status_id"] = get_status(i["Name"])
         marge["user"] = str(generate_scout_user(i["UnitId"], unit_groups))
@@ -215,9 +200,6 @@ def merge_era_data():
         marge["name"] = i.name
         marge["imei"] = i.tracker.identifier[0]
         marge["owner_agent"] = generate_era_company(i.parentGroupId, groups)
-        marge["created"] = None
-        marge["updated"] = None
-        marge["add_date"] = datetime.strptime(str(datetime.now()).split(".")[0], "%Y-%m-%d %H:%M:%S")
         marge["monitor_sys_id"] = int(5)
         marge["object_status_id"] = get_status(i.name)
         marge["user"] = generate_era_user(i.parentGroupId, users, groups)

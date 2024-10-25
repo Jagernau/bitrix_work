@@ -94,9 +94,6 @@ def add_one_object(marge_data: list):
                 object_name=item["name"],
                 imei=item["imei"],
                 owner_contragent=item["owner_agent"],
-                #object_created=item["created"],
-                #updated=item["updated"],
-                #object_add_date=item["add_date"],
                 sys_mon_id=item["monitor_sys_id"],
                 object_status=item["object_status_id"],
                 owner_user=item["user"],
@@ -247,15 +244,6 @@ def update_one_object(marge_data: list):
                     session.commit()
 
 
-                #if i["created"] != e.object_created:
-                    #log_objects(object_id = e.sys_mon_object_id, field = "created", old_value = e.object_created, new_value = i["created"], action = "update")
-                   # session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_created = i["created"]))
-                #if i["updated"] != e.updated:
-                   # session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(updated = i["updated"]))
-                #if i["add_date"] != e.object_add_date:
-                    #session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"]).values(object_add_date = i["add_date"]))
-                #if i["monitor_sys_id"] != e.sys_mon_id:
-                    #session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"]).values(sys_mon_id = i["monitor_sys_id"]))
                 if i["object_status_id"] != e.object_status:
                     log_global(
                             section_type="object",
