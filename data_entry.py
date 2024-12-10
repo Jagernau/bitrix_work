@@ -32,7 +32,7 @@ from utils.calculate import (
         generate_client_from_user,
         get_fort_user_by_id,
 )
-from database.crud import get_db_users_from_sysem
+from database.crud import get_db_users_from_sysem, get_db_contragents
 from utils.help_utils import get_time_slice
 from sim_api.classes import  BiLine
 
@@ -173,6 +173,23 @@ def merge_scout_data():
     unit_groups = scout.get_scout_unit_groups(str(token))["Groups"]
     result = []
     for i in units:
+        users = generate_scout_user(i["UnitId"], unit_groups)
+        clear_users = []
+        for i in users:
+            if i == 'Все':
+                pass
+            elif i == 'Сатанов ИП':
+                pass
+            elif i == 'Сантел Навигация':
+                pass
+            else:
+                clear_users.append(i)
+
+        contragents_ids = []
+        for user in clear_users:
+            res = get_db_contragents(user)
+            if res:
+                contragents_ids.append(res.ca_id)   
         marge = {}
         marge["id_in_system"] = str(i["UnitId"])
         marge["name"] = i["Name"]
@@ -180,8 +197,12 @@ def merge_scout_data():
         marge["owner_agent"] = i["Description"]
         marge["monitor_sys_id"] = int(6)
         marge["object_status_id"] = get_status(i["Name"])
-        marge["user"] = str(generate_scout_user(i["UnitId"], unit_groups))
+        marge["user"] = str(clear_users)
         marge["parent_id"] = i["CompanyId"]
+        cont_id = contragents_ids[0] if len(contragents_ids) >= 1 else None
+        if cont_id:
+            marge["contragent_id"] = cont_id
+
         result.append(marge)
     return result
 
@@ -624,7 +645,7 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
 #     return data
 #
 # clients = get_new_onec_clients()["Клиенты"]
-# with open("14_october_clients.json", "w") as file:
+# with open("10_dec_clients.json", "w") as file:
 #     json.dump(clients, file, indent=3, ensure_ascii=False)
 # print("GOOD")
 
