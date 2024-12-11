@@ -287,9 +287,9 @@ def update_one_object(marge_data: list):
                     session.commit()
 
                 if "contragent_id" in i:
-                    if i["contragent_id"] != e.contragent_id:
-                        log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = i["contragent_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
-                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = i["contragent_id"]))
+                    if int(i["contragent_id"]) != e.contragent_id:
+                        log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = int(i["contragent_id"]), action = "update", sys_id = int(i["monitor_sys_id"]))
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = int(i["contragent_id"])))
                         session.commit()
 
         session.close()
@@ -745,6 +745,6 @@ def get_db_contragents(str_name):
     result = session.query(models.Contragent).filter(models.Contragent.ca_name == str_name).first()
     session.close()
     if result:
-        return result
+        return result.ca_id
     else:
         return None
