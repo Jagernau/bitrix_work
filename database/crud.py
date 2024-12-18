@@ -160,12 +160,21 @@ def delete_one_object(marge_data: list):
                 edit_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first()[0],
                 field="name",
                 old_value=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().object_name,
-                new_value="0",
+                new_value="8",
                 action="delete",
                 sys_id=sys_id,
                 contragent_id=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().contragent_id
             )
-            session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).delete()
+
+            session.execute(
+                    update(models.CaObject).where(
+                        models.CaObject.sys_mon_object_id == id_,
+                        models.CaObject.sys_mon_id == sys_id
+                        ).values(
+                            object_status = 8
+                        )
+                        )
+
     session.commit()
     session.close()
 
