@@ -160,7 +160,7 @@ def delete_one_object(marge_data: list):
                 edit_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first()[0],
                 field="name",
                 old_value=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().object_name,
-                new_value="8",
+                new_value="9",
                 action="delete",
                 sys_id=sys_id,
                 contragent_id=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().contragent_id
@@ -171,7 +171,7 @@ def delete_one_object(marge_data: list):
                         models.CaObject.sys_mon_object_id == id_,
                         models.CaObject.sys_mon_id == sys_id
                         ).values(
-                            object_status = 8
+                            object_status = 9
                         )
                         )
 
@@ -308,29 +308,6 @@ def update_one_object(marge_data: list):
 # Клиенты
 ###################
 
-
-def add_clients_postgre(clients):
-    """
-    Добавляет клиентов в БД из API на Postgre
-      "name": "Венета ООО",
-      "shortname": " ООО Венета",
-      "type": "Юридическое лицо",
-      "inn": "5258072217",
-      "kpp": "525801001",
-      "tarif": null
-    """
-    session = Database().session
-    for i in clients:
-       client = models.Contragent(
-            ca_name=i["name"].replace('\xa0', ' '),
-            ca_shortname=i["shortname"].replace('\xa0', ' '),
-            ca_type=i["type"].replace('\xa0', ' '),
-            ca_inn=i["inn"],
-            ca_kpp=i["kpp"],
-        )
-       session.add(client)
-    session.commit()
-    session.close()
 
 
 def add_sys_mon_clients(clients):
@@ -757,3 +734,290 @@ def get_db_contragents(str_name):
         return result.ca_id
     else:
         return None
+
+
+#####################################
+# КОНТРАКТЫ
+#####################################
+
+def add_all_contracts_oneC(clients):
+    """
+    Добавляет Контракты в БД MySQL из 1С 
+    """
+    session = Database().session
+    for i in clients:
+        client = models.OnecContract(
+            name_contract = i["НаименованиеДоговора"],
+            contract_number = i["НомерДоговора"],
+            contract_date = i["ДатаДоговора"].split("T")[0],
+            сontract_status = i["Статус"],
+            organization = i["Организация"].replace('\xa0', ' '),
+            partner = i["Партнер"].replace('\xa0', ' '),
+            counterparty = i["Контрагент"].replace('\xa0', ' '),
+            contract_commencement_date = i["ДатаНачалаДействия"].split("T")[0],
+            contract_expiration_date = i["ДатаОкончанияДействия"].split("T")[0],
+            contract_purpose = i["Цель"],
+            type_calculations = i["ВидРасчетов"],
+            category = i["Категория"],
+            manager = i["Менеджер"],
+            subdivision = i["Подразделение"],
+            contact_person = i["КонтактноеЛицо"],
+            organization_bank_account = i["БанковскийСчетОрганизации"],
+            counterparty_bank_account = i["БанковскийСчетКонтрагента"],
+            detailed_calculations = i["ДетализацияРасчетов"],
+            unique_partner_identifier = i["УникальныйИдентификаторПартнера"],
+            unique_counterparty_identifier = i["УникальныйИдентификаторКонтрагента"]
+        )
+        session.add(client)
+        session.commit()
+    session.close()
+
+
+def add_one_oneC_contracts(contracts):
+    """ 
+    Запись в БД_2 договоров полученных из 1С
+    """
+    session = Database().session
+    contract_in_db = session.query(models.OnecContract.unique_counterparty_identifier).filter(models.OnecContract.unique_counterparty_identifier != None).all()
+    all_id_from_db = set()
+    for i in contract_in_db:
+        all_id_from_db.add(i[0])
+    for item in contracts:
+        if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
+            one_contract = models.OnecContract(
+                name_contract = item["НаименованиеДоговора"],
+                contract_number = item["НомерДоговора"],
+                contract_date = item["ДатаДоговора"].split("T")[0],
+                сontract_status = item["Статус"],
+                organization = item["Организация"].replace('\xa0', ' '),
+                partner = item["Партнер"].replace('\xa0', ' '),
+                counterparty = item["Контрагент"].replace('\xa0', ' '),
+                contract_commencement_date = item["ДатаНачалаДействия"].split("T")[0],
+                contract_expiration_date = item["ДатаОкончанияДействия"].split("T")[0],
+                contract_purpose = item["Цель"],
+                type_calculations = item["ВидРасчетов"],
+                category = item["Категория"],
+                manager = item["Менеджер"],
+                subdivision = item["Подразделение"],
+                contact_person = item["КонтактноеЛицо"],
+                organization_bank_account = item["БанковскийСчетОрганизации"],
+                counterparty_bank_account = item["БанковскийСчетКонтрагента"],
+                detailed_calculations = item["ДетализацияРасчетов"],
+                unique_partner_identifier = item["УникальныйИдентификаторПартнера"],
+                unique_counterparty_identifier = item["УникальныйИдентификаторКонтрагента"]
+            )
+            session.add(one_contract)
+            session.commit()
+            session.close()
+            
+            log_global(
+                section_type="1С_contract",
+                edit_id=session.query(models.OnecContract.contract_id, models.OnecContract.unique_counterparty_identifier).filter(models.Contragent.unique_counterparty_identifier == item["УникальныйИдентификаторКонтрагента"]).first()[0],
+                field="name_contract",
+                old_value="0",
+                new_value=item["НаименованиеДоговора"].replace('\xa0', ' '),
+                action="add",
+                sys_id=0,
+            )
+            session.commit()
+            session.close()
+
+
+def update_one_oneC_contracts(contracts):
+    
+    for i in contracts:
+        session = Database().session
+        contracts_in_db = session.query(models.OnecContract)
+        for e in contracts_in_db:
+            if i["УникальныйИдентификаторКонтрагента"] == e.unique_counterparty_identifier:
+                # name_contract = item["НаименованиеДоговора"]
+
+                if str(e.name_contract).replace('\xa0', ' ') != i["НаименованиеДоговора"].replace('\xa0', ' '):
+                    log_global(section_type="1С_contract",
+                               edit_id=e.contract_id, 
+                               field='name_contract', 
+                               old_value=e.name_contract, 
+                               new_value=i["НаименованиеДоговора"].replace('\xa0', ' '),
+                               action="update", 
+                               sys_id=0) 
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(name_contract = i["НаименованиеДоговора"].replace('\xa0', ' ')))
+                    session.commit()
+
+                # contract_number = item["НомерДоговора"]
+                if str(e.contract_number).replace('\xa0', ' ') != i["НомерДоговора"].replace('\xa0', ' '):
+                    log_global(section_type="1С_contract",
+                               action="update", 
+                               sys_id=0, 
+                               edit_id=e.contract_id, 
+                               field='contract_number', 
+                               old_value=e.contract_number, 
+                               new_value=i["НомерДоговора"].replace('\xa0', ' '))
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(contract_number = i["НомерДоговора"].replace('\xa0', ' ')))
+                    session.commit()
+
+                # contract_date = item["ДатаДоговора"].split("T")[0]
+                if str(e.contract_date).split("T")[0] != i["ДатаДоговора"].replace('\xa0', ' '):
+                    log_global(
+                            section_type="1С_contract", 
+                            action="update", 
+                            sys_id=0,
+                            edit_id=e.contract_id, 
+                            field='contract_date', 
+                            old_value=e.contract_date,
+                            new_value=i["ДатаДоговора"].split("T")[0])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(contract_date = i["ДатаДоговора"].split("T")[0]))
+                    session.commit()
+
+                # сontract_status = item["Статус"]
+                if e.сontract_status != i["Статус"]:
+                    log_global(
+                            section_type="1С_contract",
+                            action="update", 
+                            sys_id=0, 
+                            edit_id=e.contract_id,
+                            field='сontract_status',
+                            old_value=e.сontract_status,
+                            new_value=i["Статус"])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(сontract_status = i["Статус"]))
+                    session.commit()
+
+                # organization = item["Организация"].replace('\xa0', ' ')
+                if e.organization.replace('\xa0', ' ') != i["Организация"].replace('\xa0', ' '):
+                    log_global(
+                            section_type="1С_contract",
+                            action="update", 
+                            sys_id=0, 
+                            edit_id=e.contract_id,
+                            field='organization',
+                            old_value=e.organization.replace('\xa0', ' '),
+                            new_value=i["Организация"].replace('\xa0', ' '))
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(organization = i["Организация"].replace('\xa0', ' ')))
+                    session.commit()
+
+                # partner = item["Партнер"].replace('\xa0', ' ')
+                if e.partner.replace('\xa0', ' ') != i["Партнер"].replace('\xa0', ' '):
+                    log_global(
+                            section_type="1С_contract",
+                            action="update",
+                            sys_id=0,
+                            edit_id=e.contract_id,
+                            field='partner',
+                            old_value=e.partner.replace('\xa0', ' '),
+                            new_value=i["Партнер"])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(partner = i["Партнер"].replace('\xa0', ' ')))
+                    session.commit()
+
+                # counterparty = item["Контрагент"].replace('\xa0', ' ')
+                if e.counterparty.replace('\xa0', ' ') != i["Контрагент"].replace('\xa0', ' '):
+                    log_global(
+                            section_type="1С_contract", 
+                            action="update",
+                            sys_id=0, 
+                            edit_id=e.contract_id, 
+                            field='counterparty',
+                            old_value=e.counterparty,
+                            new_value=i["Контрагент"].replace('\xa0', ' '))
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(counterparty = i["Контрагент"].replace('\xa0', ' ')))
+                    session.commit()
+
+                # contract_commencement_date = item["ДатаНачалаДействия"].split("T")[0]
+                if e.contract_commencement_date.split("T")[0] != i["ДатаНачалаДействия"].split("T")[0]:
+                    log_global(
+                            section_type="1С_contract",
+                            action="update",
+                            sys_id=0,
+                            edit_id=e.contract_id,
+                            field='contract_commencement_date',
+                            old_value=e.contract_commencement_date,
+                            new_value=i["ДатаНачалаДействия"].split("T")[0])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(contract_commencement_date = i["ДатаНачалаДействия"].split("T")[0]))
+                    session.commit()
+
+                # contract_expiration_date = item["ДатаОкончанияДействия"].split("T")[0]
+                if e.contract_expiration_date.split("T")[0] != i["ДатаОкончанияДействия"].split("T")[0]:
+                    log_global(
+                            section_type="1С_contract",
+                            action="update",
+                            sys_id=0,
+                            edit_id=e.contract_id,
+                            field='contract_expiration_date',
+                            old_value=e.contract_expiration_date,
+                            new_value=i["ДатаОкончанияДействия"].split("T")[0])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(contract_expiration_date = i["ДатаОкончанияДействия"].split("T")[0]))
+                    session.commit()
+
+                # contract_purpose = item["Цель"]
+                if e.contract_purpose != i["Цель"]:
+                    log_global(
+                            section_type="1C_contract",
+                            action="update",
+                            sys_id=0,
+                            edit_id=e.contract_id,
+                            field='contract_purpose',
+                            old_value=e.contract_purpose,
+                            new_value=i["Цель"])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(contract_purpose = i["Цель"]))
+                    session.commit()
+
+                # type_calculations = item["ВидРасчетов"]
+                if e.type_calculations != i["ВидРасчетов"]:
+                    log_global(
+                            section_type="1C_contract", 
+                            action="update", 
+                            sys_id=0, 
+                            edit_id=e.contract_id,
+                            field='type_calculations', 
+                            old_value=e.type_calculations,
+                            new_value=i["ВидРасчетов"])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(type_calculations = i["ВидРасчетов"]))
+                    session.commit()
+
+                # category = item["Категория"]
+                if e.category != i["Категория"]:
+                    log_global(
+                            section_type="1C_contract", 
+                            action="update", 
+                            sys_id=0, 
+                            edit_id=e.contract_id,
+                            field='contract_id', 
+                            old_value=e.contract_id,
+                            new_value=i["Категория"])
+                    session.execute(
+                            update(models.OnecContract)
+                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                            .values(category = i["Категория"]))
+                    session.commit()
+        session.close()

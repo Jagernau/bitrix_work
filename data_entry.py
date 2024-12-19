@@ -34,8 +34,6 @@ from utils.calculate import (
 )
 from database.crud import get_db_users_from_sysem, get_db_contragents
 from utils.help_utils import get_time_slice
-from sim_api.classes import  BiLine
-
 
 import emoji
 import json
@@ -105,8 +103,6 @@ def merge_fort_data():
         marge["parent_id"] = i["groupId"]
         result.append(marge)
     return result
-
-
 
 def merge_wialon_host_data():
     
@@ -228,328 +224,6 @@ def merge_era_data():
         result.append(marge)
     return result
 
-#print(merge_era_data())
-
-##########################################################
-# CREATE, UPDATE, DEL CLIENTS
-##########################################################
-def get_postgre_clients():
-    sun = SunPostgres(str(config.SUNAPI_TOKEN))
-    clients = sun.get_clients()
-    return clients
-
-
-def get_onec_clients():
-    sun = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
-    clients = sun.get_clients()["Клиенты"]
-    return clients
-
-##########################################################
-# CREATE, UPDATE, DEL OBJECT
-##########################################################
-
-def create_glonass_model_object(json_data):
-    """" 
-    Добавить объект в систему мониторинга глонасс
-    :param json_data:
-          --"id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          "parentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          "name": "string",
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    object_model = glonasssoft.add_model_object(
-            token=token,
-            #id=json_data["id"],
-            parentId=json_data["parentId"],
-            name=json_data["name"],
-    )
-    return object_model
-
-
-def create_glonass_object(json_data):
-    """" 
-    Добавить объект в систему мониторинга глонасс
-    :param json_data:
-        "parentId": "" ,  // ID клиента
-        "name": "" ,  // имя ТС
-        "imei": "" ,  // IMEI
-        "deviceTypeId": "" ,  // ID типа устройства
-        "modelId": "" , // ID модели
-        ---"unitId": "" ,  // ID подразделения
-        "sim1": "" ,  // Номер SIM 1
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    object_ = glonasssoft.add_object(
-            token=token,
-            parentId=json_data["parentId"],
-            name=json_data["name"],
-            imei=json_data["imei"],
-            deviceTypeId=int(json_data["deviceTypeId"]),
-            modelId=json_data["modelId"],
-            #unitId=json_data["unitId"],
-            sim1=json_data["sim1"]
-    )
-    return object_
-
-
-def update_glonass_object(json_data):
-    """ 
-    Обновить объект в системе мониторинга глонасс
-    :param json_data:
-           "vehicleId": , // ID объекта
-            "parentId": "" ,  // ID клиента
-            "name": "" ,  // имя ТС
-            "imei": "" ,  // IMEI
-            "deviceTypeId": "" ,  // ID типа устройства
-            --"modelId": "" , // ID модели
-            --"unitId": "" ,  // ID подразделения
-            "sim1": "" ,  // Номер SIM 1
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    object_ = glonasssoft.update_object(
-            token=token,
-            vehicleId=json_data["vehicleId"],
-            parentId=json_data["parentId"],
-            name=json_data["name"],
-            imei=json_data["imei"],
-            deviceTypeId=int(json_data["deviceTypeId"]),
-            modelId=json_data["modelId"],
-            sim1=json_data["sim1"]
-    )
-    return object_
-
-
-# Whost
-
-def create_whost_object(json_data):
-    """"
-    Добавить объект в систему мониторинга wialon hosting
-    :param json_data:
-    :return:
-    """
-    token = str(config.TEST_IT_WHOST_TOKEN)
-    client = create_wialon_host_unit(
-            token=token, 
-            creatorId=json_data["creatorId"],
-            name=json_data["name"],
-            hwTypeId=json_data["hwTypeId"],
-            )
-    return client
-
-
-# Wlocal
-
-def create_wlocal_object(json_data):
-    """"
-    Добавить объект в систему мониторинга wialon local
-    :param json_data:
-    :return:
-    """
-    token = str(config.TEST_API_WLOCAL_TOKEN)
-    client = create_wialon_local_unit(
-            token=token, 
-            creatorId=json_data["creatorId"],
-            name=json_data["name"],
-            hwTypeId=json_data["hwTypeId"],
-            )
-    return client
-
-
-###############################################
-# CREATE, UPDATE, DELETE CLIENTS
-###############################################
-
-
-# Glonass
-def create_glonass_client(json_data):
-    """"
-    Добавить клиента в систему мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    client = glonasssoft.add_client(
-            token=token, 
-            parentId=json_data["parentId"],
-            name=json_data["name"],
-            fullName=json_data["fullName"],
-            inn=json_data["inn"],
-            kpp=json_data["kpp"],
-            )
-    return client
-
-
-def generate_glonass_client():
-    """"
-    Массовое получение всех клиентов из системы мониторинга глонасс
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    client = glonasssoft.get_glonasssoft_agents(token=token)
-    result = []
-    for i in client:
-        marge = {}
-        marge["id_in_system_monitor"] = str(i["id"])
-        marge["name_in_system_monitor"] = str(i["name"])
-        marge["owner_id_sys_mon"] = str(i["owner"])
-        marge["system_monitor_id"] = 1
-        result.append(marge)
-    return result
-
-
-def update_glonass_client(json_data):
-    """"
-    Обновление клиента в системе мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    client = glonasssoft.update_client(
-            token=token, 
-            agentId=json_data["agentId"],
-            parentId=json_data["parentId"],
-            name=json_data["name"],
-            fullName=json_data["fullName"],
-            #inn=json_data["inn"],
-            #kpp=json_data["kpp"],
-            )
-
-    return client
-
-
-# Fort
-
-def generate_fort_companys():
-    """"
-    Массовое получение всех клиентов из системы мониторинга форт
-    :return:
-    """
-    fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
-    token = str(fort.token)
-    time.sleep(2)
-    client = fort.get_fort_companies(token=token)["companies"]
-    result = []
-    for i in client:
-        marge = {}
-        marge["id_in_system_monitor"] = str(i["id"])
-        marge["name_in_system_monitor"] = str(i["name"])
-        marge["owner_id_sys_mon"] = None
-        marge["system_monitor_id"] = 2
-        result.append(marge)
-    return result
-
-
-def create_fort_client(json_data):
-    """"
-    Добавить клиента в систему мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    fort = Fort(str(config.FORT_LOGIN), str(config.FORT_PASSWORD))
-    token = str(fort.token)
-    time.sleep(2)
-    client = fort.create_company(
-            token=token, 
-            id=json_data["id"],
-            name=json_data["name"],
-            description=json_data["description"],
-            )
-    return client
-
-
-# Wialon host
-
-def create_wialon_host_users(json_data):
-    """"
-    Добавить клиента в систему мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    token = str(config.TEST_IT_WHOST_TOKEN)
-    time.sleep(2)
-    client = create_wialon_host_user(
-            token=token, 
-            creatorId=json_data["creatorId"],
-            name=json_data["name"],
-            password=json_data["password"],
-            )
-    return client
-
-def generate_wialon_host_users():
-    """"
-    Массовое получение всех клиентов из системы мониторинга whosting
-    :return:
-    """
-    token = str(config.TEST_IT_WHOST_TOKEN)
-    time.sleep(2)
-    client = get_wialon_host_users(token=token)["items"]
-    result = []
-    for i in client:
-        marge = {}
-        marge["id_in_system_monitor"] = str(i["id"])
-        marge["name_in_system_monitor"] = str(i["nm"])
-        marge["owner_id_sys_mon"] = str(i["crt"])
-        marge["system_monitor_id"] = 3
-        result.append(marge)
-    return result
-
-
-# Wialon local 
-
-def generate_wialon_local_users():
-    """"
-    Массовое получение всех клиентов из системы мониторинга whosting
-    :return:
-    """
-    token = str(config.WIALON_LOCAL_TOKEN)
-    time.sleep(2)
-    client = get_wialon_local_users(token=token)["items"]
-    result = []
-    for i in client:
-        marge = {}
-        marge["id_in_system_monitor"] = str(i["id"])
-        marge["name_in_system_monitor"] = str(i["nm"])
-        marge["owner_id_sys_mon"] = str(i["crt"])
-        marge["system_monitor_id"] = 4
-        result.append(marge)
-    return result
-
-
-def create_wialon_local_users(json_data):
-    """"
-    Добавить клиента в систему мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    token = str(config.TEST_API_WLOCAL_TOKEN)
-    time.sleep(2)
-    client = create_wialon_local_user(
-            token=token, 
-            creatorId=json_data["creatorId"],
-            name=json_data["name"],
-            password=json_data["password"],
-            )
-    return client
-
-
-################################################
-# Utils objects
-################################################
 # Glonasssoft
 def put_comand_to_glonasssoft(json_data):
     """"
@@ -639,27 +313,20 @@ def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_gl
     )
     return get_data
 
-# def get_new_onec_clients():
-#     onec = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONE_C_URL))
-#     data = onec.get_clients()
-#     return data
-#
-# clients = get_new_onec_clients()["Клиенты"]
-# with open("10_dec_clients.json", "w") as file:
-#     json.dump(clients, file, indent=3, ensure_ascii=False)
-# print("GOOD")
+def get_onec_clients():
+    "Отдаёт клиентов 1С"
+    sun = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONEC_CLIENT_URL))
+    clients = sun.get_clients()["Клиенты"]
+    return clients
 
-################################################
-# SimApi
-################################################
-# def get_token_beeline():
-#     bi_line = BiLine(
-#             username=str(config.BILINE_USERNAME),
-#             password=str(config.BILINE_PASSWORD),
-#             client_id=str(config.BILINE_CLIENT_ID), 
-#             client_secret=str(config.BILINE_CLIENT_SECRET)
-#             )
-#     token = bi_line.token
-#     return token
-#
-# print(get_token_beeline())
+def get_onec_contracts():
+    "Отдаёт контракты 1С"
+    sun = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONEC_CONTRACT_URL))
+    contracts = sun.get_clients()["Договоры"]
+    return contracts
+
+contracts = get_onec_contracts()
+with open("contracts.json", "w") as file:
+    json.dump(contracts, file, indent=3, ensure_ascii=False)
+print(len(contracts))
+

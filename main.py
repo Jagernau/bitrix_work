@@ -6,14 +6,19 @@ from data_entry import (
         merge_scout_data,
         merge_era_data,
         get_onec_clients,
+        get_onec_contracts
         )
 
 from database.crud import (
         add_one_object,
+        add_one_oneC_contracts,
         delete_one_object,
         update_one_object,
         add_one_oneC_clients,
         update_one_oneC_client,
+        add_all_contracts_oneC,
+        add_one_oneC_contracts,
+        update_one_oneC_contracts
         )
 
 import schedule
@@ -32,7 +37,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Создание обработчика для записи в файл
-file_handler = logging.FileHandler('new_log.txt')
+file_handler = logging.FileHandler('19_12_log.txt')
 file_handler.setLevel(logging.INFO)
 
 # Создание форматировщика
@@ -197,12 +202,10 @@ def job():
             clients_oneC = get_onec_clients()
             logger.info("Клиенты 1С конец получения")
 
-            # add_all_clients_oneC(clients_oneC)
             logger.info("Клиенты 1С начал добавлять")
             add_one_oneC_clients(clients_oneC)
             logger.info("Клиенты 1С окончил добавлять")
 
-            # delete_one_oneC_client(clients_oneC)
             logger.info("Клиенты 1С начали обновляться")
             update_one_oneC_client(clients_oneC)
             logger.info("Клиенты 1С закончили обновляться")
@@ -211,6 +214,25 @@ def job():
         except Exception as e:
             logger.error(f"В обновлении клиентов OneC возникла ошибка: {e}")
 
+
+        try:
+
+            logger.info("Договоры 1С начало получения")
+            contracts_oneC = get_onec_contracts()
+            logger.info("Договоры 1С конец получения")
+
+            #add_all_contracts_oneC(contracts_oneC)
+            logger.info("Договоры 1С начал добавлять")
+            add_one_oneC_contracts(contracts_oneC)
+            logger.info("Договоры 1С окончил добавлять")
+
+            logger.info("Договоры 1С начали обновляться")
+            update_one_oneC_contracts(contracts_oneC)
+            logger.info("Договоры 1С закончили обновляться")
+
+            logger.info("Договоры OneC успешно обновлены")
+        except Exception as e:
+            logger.error(f"В обновлении Договоры OneC возникла ошибка: {e}")
 
 if __name__ == '__main__':
 
