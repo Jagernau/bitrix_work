@@ -7,6 +7,22 @@ from sqlalchemy import and_, or_, update
 from datetime import datetime
 from database.logging_crud import log_global
 
+import logging
+
+# Создание и настройка логгера
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Создание обработчика для записи в файл
+file_handler = logging.FileHandler('log_db.txt')
+file_handler.setLevel(logging.INFO)
+
+# Создание форматировщика
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Добавление обработчика к логгеру
+logger.addHandler(file_handler)
 
 ###############################################
 # Объекты в бд
@@ -69,58 +85,62 @@ def add_one_object(marge_data: list):
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
-    users_logins = session.query(models.LoginUser).filter(
-        models.LoginUser.system_id == sys_id,
-        models.LoginUser.contragent_id != None
-    )
-    objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
-        models.CaObject.sys_mon_id == sys_id,
-    )
-    all_id_from_db = set()
-    for i in objects_in_db:
-        all_id_from_db.add(i[0])
+    try:
+        users_logins = session.query(models.LoginUser).filter(
+            models.LoginUser.system_id == sys_id,
+            models.LoginUser.contragent_id != None
+        )
+        objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
+            models.CaObject.sys_mon_id == sys_id,
+        )
+        all_id_from_db = set()
+        for i in objects_in_db:
+            all_id_from_db.add(i[0])
 
-    for item in marge_data:
-        if item["id_in_system"] not in all_id_from_db:
+        for item in marge_data:
+            if item["id_in_system"] not in all_id_from_db:
 
 
-            contragent_id = users_logins.filter(
-                models.LoginUser.login == item["user"],
-            )
-            result = contragent_id.first().contragent_id if contragent_id.first() else None
+                contragent_id = users_logins.filter(
+                    models.LoginUser.login == item["user"],
+                )
+                result = contragent_id.first().contragent_id if contragent_id.first() else None
 
-            ca_object = models.CaObject(
-                sys_mon_object_id=item["id_in_system"],
-                object_name=item["name"],
-                imei=item["imei"],
-                owner_contragent=item["owner_agent"],
-                sys_mon_id=item["monitor_sys_id"],
-                object_status=item["object_status_id"],
-                owner_user=item["user"],
-                parent_id_sys = item["parent_id"],
-                contragent_id = int(result) if result else None
-            )
-            session.add(ca_object)
-            session.commit()
-            session.close()
+                ca_object = models.CaObject(
+                    sys_mon_object_id=item["id_in_system"],
+                    object_name=item["name"],
+                    imei=item["imei"],
+                    owner_contragent=item["owner_agent"],
+                    sys_mon_id=item["monitor_sys_id"],
+                    object_status=item["object_status_id"],
+                    owner_user=item["user"],
+                    parent_id_sys = item["parent_id"],
+                    contragent_id = int(result) if result else None
+                )
+                session.add(ca_object)
+                session.commit()
 
-# Логгирование добавления
-            log_global(
-                section_type="object",
-                edit_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
-                    models.CaObject.sys_mon_object_id == item["id_in_system"],
-                    models.CaObject.sys_mon_id == sys_id
-                ).first()[0],
-                field="name",
-                old_value="0",
-                new_value=item["name"],
-                action="add",
-                sys_id=sys_id,
-                contragent_id=int(result) if result else None
-            )
-            session.commit()
-            session.close()
+                log_global(
+                    section_type="object",
+                    edit_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
+                        models.CaObject.sys_mon_object_id == item["id_in_system"],
+                        models.CaObject.sys_mon_id == sys_id
+                    ).first()[0],
+                    field="name",
+                    old_value="0",
+                    new_value=item["name"],
+                    action="add",
+                    sys_id=sys_id,
+                    contragent_id=int(result) if result else None
+                )
+                session.commit()
 
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при добавлении объектов по одному БД: {ex}")
+    
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 
 def delete_one_object(marge_data: list):
@@ -144,39 +164,46 @@ def delete_one_object(marge_data: list):
     """
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
-    objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
-        models.CaObject.sys_mon_id == sys_id,
-    )
-    all_id_from_db = set()
-    for i in objects_in_db:
-        all_id_from_db.add(i[0])
-    all_id_from_sysmon = set()
-    for item in marge_data:
-        all_id_from_sysmon.add(item["id_in_system"])
-    for id_ in all_id_from_db:
-        if id_ not in all_id_from_sysmon:
-            log_global(
-                section_type="object",
-                edit_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first()[0],
-                field="name",
-                old_value=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().object_name,
-                new_value="9",
-                action="delete",
-                sys_id=sys_id,
-                contragent_id=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().contragent_id
-            )
+    try:
+        objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
+            models.CaObject.sys_mon_id == sys_id,
+        )
+        all_id_from_db = set()
+        for i in objects_in_db:
+            all_id_from_db.add(i[0])
+        all_id_from_sysmon = set()
+        for item in marge_data:
+            all_id_from_sysmon.add(item["id_in_system"])
+        for id_ in all_id_from_db:
+            if id_ not in all_id_from_sysmon:
+                log_global(
+                    section_type="object",
+                    edit_id=session.query(models.CaObject.id, models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first()[0],
+                    field="name",
+                    old_value=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().object_name,
+                    new_value="9",
+                    action="delete",
+                    sys_id=sys_id,
+                    contragent_id=session.query(models.CaObject).filter(models.CaObject.sys_mon_object_id == id_, models.CaObject.sys_mon_id == sys_id).first().contragent_id
+                )
 
-            session.execute(
-                    update(models.CaObject).where(
-                        models.CaObject.sys_mon_object_id == id_,
-                        models.CaObject.sys_mon_id == sys_id
-                        ).values(
-                            object_status = 9
-                        )
-                        )
+                session.execute(
+                        update(models.CaObject).where(
+                            models.CaObject.sys_mon_object_id == id_,
+                            models.CaObject.sys_mon_id == sys_id
+                            ).values(
+                                object_status = 9
+                            )
+                            )
+        session.commit()
 
-    session.commit()
-    session.close()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при удалении объектов по одному БД: {ex}")
+    
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
+
 
 def update_one_object(marge_data: list):
     """
@@ -200,108 +227,108 @@ def update_one_object(marge_data: list):
     sys_id = marge_data[10]["monitor_sys_id"]
 
     for i in marge_data:
-
         session = Database().session
-        objects_in_db = session.query(models.CaObject).filter(
-            models.CaObject.sys_mon_id == sys_id        
-        )
-        
+        try:
+            objects_in_db = session.query(models.CaObject).filter(
+                models.CaObject.sys_mon_id == sys_id        
+            )
+            
 
-        users_logins = session.query(models.LoginUser).filter(
-            models.LoginUser.system_id == sys_id,
-            models.LoginUser.contragent_id != None
-        )
+            users_logins = session.query(models.LoginUser).filter(
+                models.LoginUser.system_id == sys_id,
+                models.LoginUser.contragent_id != None
+            )
 
-        for e in objects_in_db:
-            if i["id_in_system"] == e.sys_mon_object_id:
+            for e in objects_in_db:
+                if i["id_in_system"] == e.sys_mon_object_id:
 
-                contr_id = users_logins.filter(
-                    models.LoginUser.login == i["user"],
-                    )
-                result = contr_id.first().contragent_id if contr_id.first() else None
+                    contr_id = users_logins.filter(
+                        models.LoginUser.login == i["user"],
+                        )
+                    result = contr_id.first().contragent_id if contr_id.first() else None
 
-                if i["name"] != e.object_name:
-                    log_global(
-                            section_type="object",
-                            edit_id = e.id, 
-                            field = "name", 
-                            old_value = e.object_name,
-                            new_value = i["name"], 
-                            action = "update", 
-                            sys_id = int(i["monitor_sys_id"]),
-                            contragent_id = result
-                            )
-                    session.execute(
-                            update(models.CaObject)
-                            .where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"])
-                            .values(object_name = i["name"]))
-
-                    session.commit()
-
-
-                if str(i["imei"]) != str(e.imei):
-                    log_global(section_type="object", edit_id = e.id, field = "imei", old_value = str(e.imei), new_value = str(i["imei"]), action = "update", sys_id = int(i["monitor_sys_id"]))
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(imei = str(i["imei"])))
-
-                    session.commit()
-
-
-                if i["owner_agent"] != e.owner_contragent:
-                    log_global(section_type="object", edit_id = e.id, field = "owner_agent", old_value = e.owner_contragent, new_value = i["owner_agent"], action = "update", sys_id = int(i["monitor_sys_id"]))
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_contragent = i["owner_agent"]))
-
-                    session.commit()
-
-
-                if i["object_status_id"] != e.object_status:
-                    log_global(
-                            section_type="object",
-                            edit_id = e.id, 
-                            field = "object_status_id",
-                            old_value = e.object_status,
-                            new_value = i["object_status_id"],
-                            action = "update", 
-                            sys_id = int(i["monitor_sys_id"]),
-                            contragent_id = result,
-                            )
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
-
-                    session.commit()
-
-
-                if i["user"] != e.owner_user:
-                    log_global(
-                            section_type="object", 
-                            edit_id = e.id, 
-                            field = "owner_user",
-                            old_value = e.owner_user,
-                            new_value = i["user"],
-                            action = "update",
-                            sys_id = int(i["monitor_sys_id"])
-                            )
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_user = i["user"]))
-                    session.commit()
-
-
-                if str(i["parent_id"]) != str(e.parent_id_sys):
-                    log_global(section_type="object", edit_id = e.id, field = "parent_id", old_value = e.parent_id_sys, new_value = i["parent_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
-
-                    session.commit()
-
-
-                if result != e.contragent_id:
-                    log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = result, action = "update", sys_id = int(i["monitor_sys_id"]))
-                    session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = result))
-                    session.commit()
-
-                if "contragent_id" in i:
-                    if int(i["contragent_id"]) != e.contragent_id:
-                        log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = int(i["contragent_id"]), action = "update", sys_id = int(i["monitor_sys_id"]))
-                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = int(i["contragent_id"])))
+                    if i["name"] != e.object_name:
+                        log_global(
+                                section_type="object",
+                                edit_id = e.id, 
+                                field = "name", 
+                                old_value = e.object_name,
+                                new_value = i["name"], 
+                                action = "update", 
+                                sys_id = int(i["monitor_sys_id"]),
+                                contragent_id = result
+                                )
+                        session.execute(
+                                update(models.CaObject)
+                                .where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"])
+                                .values(object_name = i["name"]))
                         session.commit()
 
-        session.close()
+
+                    if str(i["imei"]) != str(e.imei):
+                        log_global(section_type="object", edit_id = e.id, field = "imei", old_value = str(e.imei), new_value = str(i["imei"]), action = "update", sys_id = int(i["monitor_sys_id"]))
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(imei = str(i["imei"])))
+                        session.commit()
+
+
+                    if i["owner_agent"] != e.owner_contragent:
+                        log_global(section_type="object", edit_id = e.id, field = "owner_agent", old_value = e.owner_contragent, new_value = i["owner_agent"], action = "update", sys_id = int(i["monitor_sys_id"]))
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_contragent = i["owner_agent"]))
+                        session.commit()
+
+
+                    if i["object_status_id"] != e.object_status:
+                        log_global(
+                                section_type="object",
+                                edit_id = e.id, 
+                                field = "object_status_id",
+                                old_value = e.object_status,
+                                new_value = i["object_status_id"],
+                                action = "update", 
+                                sys_id = int(i["monitor_sys_id"]),
+                                contragent_id = result,
+                                )
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(object_status = i["object_status_id"]))
+                        session.commit()
+
+
+                    if i["user"] != e.owner_user:
+                        log_global(
+                                section_type="object", 
+                                edit_id = e.id, 
+                                field = "owner_user",
+                                old_value = e.owner_user,
+                                new_value = i["user"],
+                                action = "update",
+                                sys_id = int(i["monitor_sys_id"])
+                                )
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(owner_user = i["user"]))
+                        session.commit()
+
+
+                    if str(i["parent_id"]) != str(e.parent_id_sys):
+                        log_global(section_type="object", edit_id = e.id, field = "parent_id", old_value = e.parent_id_sys, new_value = i["parent_id"], action = "update", sys_id = int(i["monitor_sys_id"]))
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(parent_id_sys = i["parent_id"]))
+                        session.commit()
+
+
+                    if result != e.contragent_id:
+                        log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = result, action = "update", sys_id = int(i["monitor_sys_id"]))
+                        session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = result))
+                        session.commit()
+
+                    if "contragent_id" in i:
+                        if int(i["contragent_id"]) != e.contragent_id:
+                            log_global(section_type="object", edit_id = e.id, field = "contragent_id", old_value = e.contragent_id, new_value = int(i["contragent_id"]), action = "update", sys_id = int(i["monitor_sys_id"]))
+                            session.execute(update(models.CaObject).where(models.CaObject.sys_mon_object_id == i["id_in_system"], models.CaObject.sys_mon_id == i["monitor_sys_id"]).values(contragent_id = int(i["contragent_id"])))
+                            session.commit()
+
+        except Exception as ex:
+            session.rollback()  # Откат транзакции в случае ошибки
+            logger.error(f"Ошибка при Обновлении объектов по одному БД: {ex}")
+        
+        finally:
+            session.close()  # Закрытие сессии после завершения работы
 
 
 ###################
@@ -320,16 +347,21 @@ def add_sys_mon_clients(clients):
 
     """
     session = Database().session
-    for i in clients:
-        client = models.ClientsInSystemMonitor(
-            id_in_system_monitor=i["id_in_system_monitor"],
-            name_in_system_monitor=i["name_in_system_monitor"],
-            owner_id_sys_mon=i["owner_id_sys_mon"],
-            system_monitor_id=i["system_monitor_id"]
-        )
-        session.add(client)
-    session.commit()
-    session.close()
+    try:
+        for i in clients:
+            client = models.ClientsInSystemMonitor(
+                id_in_system_monitor=i["id_in_system_monitor"],
+                name_in_system_monitor=i["name_in_system_monitor"],
+                owner_id_sys_mon=i["owner_id_sys_mon"],
+                system_monitor_id=i["system_monitor_id"]
+            )
+            session.add(client)
+        session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Добавлении клиентов по одному БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 def add_one_sys_mon_client(clients):
     """
@@ -342,24 +374,30 @@ def add_one_sys_mon_client(clients):
     """
     sys_id = clients[10]["system_monitor_id"]
     session = Database().session
-    clients_in_db = session.query(models.ClientsInSystemMonitor.id_in_system_monitor, models.ClientsInSystemMonitor.system_monitor_id).filter(
-        models.ClientsInSystemMonitor.system_monitor_id == sys_id,
-    )
-    all_id_from_db = set()
-    for i in clients_in_db:
-        all_id_from_db.add(i[0])
+    try:
+        clients_in_db = session.query(models.ClientsInSystemMonitor.id_in_system_monitor, models.ClientsInSystemMonitor.system_monitor_id).filter(
+            models.ClientsInSystemMonitor.system_monitor_id == sys_id,
+        )
+        all_id_from_db = set()
+        for i in clients_in_db:
+            all_id_from_db.add(i[0])
 
-    for item in clients:
-        if item["id_in_system_monitor"] not in all_id_from_db:
-            client = models.ClientsInSystemMonitor(
-                id_in_system_monitor=item["id_in_system_monitor"],
-                name_in_system_monitor=item["name_in_system_monitor"],
-                owner_id_sys_mon=item["owner_id_sys_mon"],
-                system_monitor_id=item["system_monitor_id"]
-            )
-            session.add(client)
-    session.commit()
-    session.close()
+        for item in clients:
+            if item["id_in_system_monitor"] not in all_id_from_db:
+                client = models.ClientsInSystemMonitor(
+                    id_in_system_monitor=item["id_in_system_monitor"],
+                    name_in_system_monitor=item["name_in_system_monitor"],
+                    owner_id_sys_mon=item["owner_id_sys_mon"],
+                    system_monitor_id=item["system_monitor_id"]
+                )
+                session.add(client)
+        session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Добавлении клиентов по одному БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
+
 
 def update_one_sys_mon_client(clients):
     """
@@ -375,18 +413,24 @@ def update_one_sys_mon_client(clients):
     """
     sys_id = clients[10]["system_monitor_id"]
     session = Database().session
-    clients_in_db = session.query(models.ClientsInSystemMonitor).filter(
-        models.ClientsInSystemMonitor.system_monitor_id == sys_id        
-    )
-    for i in clients:
-        for e in clients_in_db:
-            if i["id_in_system_monitor"] == e.id_in_system_monitor:
-                if i["name_in_system_monitor"] != e.name_in_system_monitor:
-                    session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(name_in_system_monitor = i["name_in_system_monitor"]))
-                if i["owner_id_sys_mon"] != e.owner_id_sys_mon:
-                    session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(owner_id_sys_mon = i["owner_id_sys_mon"]))
-    session.commit()
-    session.close()
+    try:
+        clients_in_db = session.query(models.ClientsInSystemMonitor).filter(
+            models.ClientsInSystemMonitor.system_monitor_id == sys_id        
+        )
+        for i in clients:
+            for e in clients_in_db:
+                if i["id_in_system_monitor"] == e.id_in_system_monitor:
+                    if i["name_in_system_monitor"] != e.name_in_system_monitor:
+                        session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(name_in_system_monitor = i["name_in_system_monitor"]))
+                    if i["owner_id_sys_mon"] != e.owner_id_sys_mon:
+                        session.execute(update(models.ClientsInSystemMonitor).where(models.ClientsInSystemMonitor.id_in_system_monitor == i["id_in_system_monitor"]).values(owner_id_sys_mon = i["owner_id_sys_mon"]))
+        session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Обновлении клиентов по одному БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
+
 
 def delete_one_sys_mon_client(clients):
     """
@@ -402,20 +446,25 @@ def delete_one_sys_mon_client(clients):
     """
     sys_id = clients[10]["system_monitor_id"]
     session = Database().session
-    clients_in_db = session.query(models.ClientsInSystemMonitor.id_in_system_monitor, models.ClientsInSystemMonitor.system_monitor_id).filter(
-        models.ClientsInSystemMonitor.system_monitor_id == sys_id        
-    )
-    all_id_from_db = set()
-    for i in clients_in_db:
-        all_id_from_db.add(i[0])
-    all_id_from_sys_mon = set()
-    for i in clients:
-        all_id_from_sys_mon.add(i["id_in_system_monitor"])
-    for id_ in all_id_from_db:
-        if id_ not in all_id_from_sys_mon:
-            session.query(models.ClientsInSystemMonitor).filter(models.ClientsInSystemMonitor.id_in_system_monitor == id_).filter(models.ClientsInSystemMonitor.system_monitor_id == sys_id).delete()
-    session.commit()
-    session.close()
+    try:
+        clients_in_db = session.query(models.ClientsInSystemMonitor.id_in_system_monitor, models.ClientsInSystemMonitor.system_monitor_id).filter(
+            models.ClientsInSystemMonitor.system_monitor_id == sys_id        
+        )
+        all_id_from_db = set()
+        for i in clients_in_db:
+            all_id_from_db.add(i[0])
+        all_id_from_sys_mon = set()
+        for i in clients:
+            all_id_from_sys_mon.add(i["id_in_system_monitor"])
+        for id_ in all_id_from_db:
+            if id_ not in all_id_from_sys_mon:
+                session.query(models.ClientsInSystemMonitor).filter(models.ClientsInSystemMonitor.id_in_system_monitor == id_).filter(models.ClientsInSystemMonitor.system_monitor_id == sys_id).delete()
+        session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Удалении клиентов по одному БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 
 ###################
@@ -424,10 +473,15 @@ def delete_one_sys_mon_client(clients):
 
 def get_db_users_from_sysem(system_id: int):
     session = Database().session
-    users = session.query(models.LoginUser.system_id, models.LoginUser.login, models.LoginUser.client_name).filter(models.LoginUser.system_id == system_id).all()
-    session.close()
-    return users
-    
+    try:
+        users = session.query(models.LoginUser.system_id, models.LoginUser.login, models.LoginUser.client_name).filter(models.LoginUser.system_id == system_id).all()
+        session.close()
+        return users
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Удалении клиентов по одному БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 
 ###################
@@ -451,290 +505,308 @@ def add_all_clients_oneC(clients):
     "Телефон"
     """
     session = Database().session
-    for i in clients:
-        client = models.Contragent(
-            ca_name=i["НаименованиеПартнер"].replace('\xa0', ' '),
-            ca_shortname=i["НаименованиеПолноеПартнер"].replace('\xa0', ' '),
-            ca_type=i["ЮрФизЛицоПартнер"].replace('\xa0', ' '),
-            ca_inn=i["ИНН"],
-            ca_kpp=i["КПП"],
-            ca_field_of_activity = i["НаправлениеБизнеса"],
-            unique_onec_id = i["УникальныйИдентификаторПартнера"],
-            registration_date = i["ДатаРегистрации"].split("T")[0],
-            key_manager = i["ОсновнойМенеджер"],
-            actual_address = i["ФактическийАдрес1"],
-            registered_office = i["ЮридическийАдрес1"],
-            phone = i["Телефон"],
-            ca_uid_contragent = i["УникальныйИдентификаторКонтрагента"],
-            ca_name_contragent = i["НаименованиеКонтрагент"]
-        )
-        session.add(client)
-    session.commit()
-    session.close()
-
+    try:
+        for i in clients:
+            client = models.Contragent(
+                ca_name=i["НаименованиеПартнер"].replace('\xa0', ' '),
+                ca_shortname=i["НаименованиеПолноеПартнер"].replace('\xa0', ' '),
+                ca_type=i["ЮрФизЛицоПартнер"].replace('\xa0', ' '),
+                ca_inn=i["ИНН"],
+                ca_kpp=i["КПП"],
+                ca_field_of_activity = i["НаправлениеБизнеса"],
+                unique_onec_id = i["УникальныйИдентификаторПартнера"],
+                registration_date = i["ДатаРегистрации"].split("T")[0],
+                key_manager = i["ОсновнойМенеджер"],
+                actual_address = i["ФактическийАдрес1"],
+                registered_office = i["ЮридическийАдрес1"],
+                phone = i["Телефон"],
+                ca_uid_contragent = i["УникальныйИдентификаторКонтрагента"],
+                ca_name_contragent = i["НаименованиеКонтрагент"]
+            )
+            session.add(client)
+        session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Добавлении клиентов по БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 def add_one_oneC_clients(clients):
     """ 
     Запись в БД_2 конрагентов полученных из 1С
     """
     session = Database().session
-    clients_in_db = session.query(models.Contragent.ca_uid_contragent).filter(models.Contragent.ca_uid_contragent != None).all()
-    all_id_from_db = set()
-    for i in clients_in_db:
-        all_id_from_db.add(i[0])
-    for item in clients:
-        if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
-            one_client = models.Contragent(
-                ca_name=item["НаименованиеПартнер"].replace('\xa0', ' '),
-                ca_shortname=item["НаименованиеПолноеПартнер"].replace('\xa0', ' '),
-                ca_type=item["ЮрФизЛицоПартнер"].replace('\xa0', ' '),
-                ca_inn=item["ИНН"],
-                ca_kpp=item["КПП"],
-                ca_field_of_activity = item["НаправлениеБизнеса"],
-                unique_onec_id = item["УникальныйИдентификаторПартнера"],
-                registration_date = item["ДатаРегистрации"].split("T")[0],
-                key_manager = item["ОсновнойМенеджер"],
-                actual_address = item["ФактическийАдрес1"],
-                registered_office = item["ЮридическийАдрес1"],
-                phone = item["Телефон"],
-                ca_uid_contragent = item["УникальныйИдентификаторКонтрагента"],
-                ca_name_contragent = item["НаименованиеКонтрагент"],
-                service_manager = item["СервисныйМенеджер"]
-            )
-            session.add(one_client)
-            session.commit()
-            session.close()
-            
-            log_global(
-                section_type="1С_client",
-                edit_id=session.query(models.Contragent.ca_id, models.Contragent.ca_uid_contragent).filter(models.Contragent.ca_uid_contragent == item["УникальныйИдентификаторКонтрагента"]).first()[0],
-                field="ca_name",
-                old_value="0",
-                new_value=item["НаименованиеПартнер"].replace('\xa0', ' '),
-                action="add",
-                sys_id=0,
-            )
-            session.commit()
-            session.close()
- 
+    try:
+        clients_in_db = session.query(models.Contragent.ca_uid_contragent).filter(models.Contragent.ca_uid_contragent != None).all()
+        all_id_from_db = set()
+        for i in clients_in_db:
+            all_id_from_db.add(i[0])
+        for item in clients:
+            if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
+                one_client = models.Contragent(
+                    ca_name=item["НаименованиеПартнер"].replace('\xa0', ' '),
+                    ca_shortname=item["НаименованиеПолноеПартнер"].replace('\xa0', ' '),
+                    ca_type=item["ЮрФизЛицоПартнер"].replace('\xa0', ' '),
+                    ca_inn=item["ИНН"],
+                    ca_kpp=item["КПП"],
+                    ca_field_of_activity = item["НаправлениеБизнеса"],
+                    unique_onec_id = item["УникальныйИдентификаторПартнера"],
+                    registration_date = item["ДатаРегистрации"].split("T")[0],
+                    key_manager = item["ОсновнойМенеджер"],
+                    actual_address = item["ФактическийАдрес1"],
+                    registered_office = item["ЮридическийАдрес1"],
+                    phone = item["Телефон"],
+                    ca_uid_contragent = item["УникальныйИдентификаторКонтрагента"],
+                    ca_name_contragent = item["НаименованиеКонтрагент"],
+                    service_manager = item["СервисныйМенеджер"]
+                )
+                session.add(one_client)
+                session.commit()
+                
+                log_global(
+                    section_type="1С_client",
+                    edit_id=session.query(models.Contragent.ca_id, models.Contragent.ca_uid_contragent).filter(models.Contragent.ca_uid_contragent == item["УникальныйИдентификаторКонтрагента"]).first()[0],
+                    field="ca_name",
+                    old_value="0",
+                    new_value=item["НаименованиеПартнер"].replace('\xa0', ' '),
+                    action="add",
+                    sys_id=0,
+                )
+                session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Добавлении клиентов по БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
     
 def delete_one_oneC_client(clients):
     session = Database().session
-    db_clients = session.query(models.Contragent.unique_onec_id).all()
-    all_id_db_clients = set()
-    for i in db_clients:
-        all_id_db_clients.add(i[0])
-    all_id_oneC = set()
-    for item in clients:
-        all_id_oneC.add(item["УникальныйИдентификаторПартнера"])
-    for id_ in all_id_db_clients:
-        if id_ not in all_id_oneC:
-            session.query(models.Contragent).filter(models.Contragent.unique_onec_id == id_).delete()
+    try:
+        db_clients = session.query(models.Contragent.unique_onec_id).all()
+        all_id_db_clients = set()
+        for i in db_clients:
+            all_id_db_clients.add(i[0])
+        all_id_oneC = set()
+        for item in clients:
+            all_id_oneC.add(item["УникальныйИдентификаторПартнера"])
+        for id_ in all_id_db_clients:
+            if id_ not in all_id_oneC:
+                session.query(models.Contragent).filter(models.Contragent.unique_onec_id == id_).delete()
 
-    session.commit()
-    session.close()
+        session.commit()
 
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Удалении клиентов по БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 def update_one_oneC_client(clients):
-    
     for i in clients:
         session = Database().session
-        clients_in_db = session.query(models.Contragent)
-        for e in clients_in_db:
-            if i["УникальныйИдентификаторКонтрагента"] == e.ca_uid_contragent:
+        try:
+            clients_in_db = session.query(models.Contragent)
+            for e in clients_in_db:
+                if i["УникальныйИдентификаторКонтрагента"] == e.ca_uid_contragent:
 
-                if str(e.ca_name).replace('\xa0', ' ') != i["НаименованиеПартнер"].replace('\xa0', ' '):
-                    log_global(section_type="1С_client",
-                               edit_id=e.ca_id, 
-                               field='ca_name', 
-                               old_value=e.ca_name, 
-                               new_value=i["НаименованиеПартнер"].replace('\xa0', ' '),
-                               action="update", 
-                               sys_id=0) 
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_name = i["НаименованиеПартнер"].replace('\xa0', ' ')))
-                    session.commit()
+                    if str(e.ca_name).replace('\xa0', ' ') != i["НаименованиеПартнер"].replace('\xa0', ' '):
+                        log_global(section_type="1С_client",
+                                   edit_id=e.ca_id, 
+                                   field='ca_name', 
+                                   old_value=e.ca_name, 
+                                   new_value=i["НаименованиеПартнер"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_name = i["НаименованиеПартнер"].replace('\xa0', ' ')))
+                        session.commit()
 
-                if str(e.ca_shortname).replace('\xa0', ' ') != i["НаименованиеПолноеПартнер"].replace('\xa0', ' '):
-                    log_global(section_type="1С_client",
-                               action="update", 
-                               sys_id=0, 
-                               edit_id=e.ca_id, 
-                               field='ca_shortname', 
-                               old_value=e.ca_shortname, 
-                               new_value=i["НаименованиеПолноеПартнер"].replace('\xa0', ' '))
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_shortname = i["НаименованиеПолноеПартнер"].replace('\xa0', ' ')))
-                    session.commit()
+                    if str(e.ca_shortname).replace('\xa0', ' ') != i["НаименованиеПолноеПартнер"].replace('\xa0', ' '):
+                        log_global(section_type="1С_client",
+                                   action="update", 
+                                   sys_id=0, 
+                                   edit_id=e.ca_id, 
+                                   field='ca_shortname', 
+                                   old_value=e.ca_shortname, 
+                                   new_value=i["НаименованиеПолноеПартнер"].replace('\xa0', ' '))
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_shortname = i["НаименованиеПолноеПартнер"].replace('\xa0', ' ')))
+                        session.commit()
 
-                if str(e.ca_type).replace('\xa0', ' ') != i["ЮрФизЛицоПартнер"].replace('\xa0', ' '):
-                    log_global(
-                            section_type="1С_client", 
-                            action="update", 
-                            sys_id=0,
-                            edit_id=e.ca_id, 
-                            field='ca_type', 
-                            old_value=e.ca_type,
-                            new_value=i["ЮрФизЛицоПартнер"].replace('\xa0', ' '))
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_type = i["ЮрФизЛицоПартнер"].replace('\xa0', ' ')))
-                    session.commit()
+                    if str(e.ca_type).replace('\xa0', ' ') != i["ЮрФизЛицоПартнер"].replace('\xa0', ' '):
+                        log_global(
+                                section_type="1С_client", 
+                                action="update", 
+                                sys_id=0,
+                                edit_id=e.ca_id, 
+                                field='ca_type', 
+                                old_value=e.ca_type,
+                                new_value=i["ЮрФизЛицоПартнер"].replace('\xa0', ' '))
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_type = i["ЮрФизЛицоПартнер"].replace('\xa0', ' ')))
+                        session.commit()
 
-                if e.ca_inn != i["ИНН"]:
-                    log_global(
-                            section_type="1С_client",
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.ca_id,
-                            field='ca_inn',
-                            old_value=e.ca_inn,
-                            new_value=i["ИНН"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_inn = i["ИНН"]))
-                    session.commit()
+                    if e.ca_inn != i["ИНН"]:
+                        log_global(
+                                section_type="1С_client",
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.ca_id,
+                                field='ca_inn',
+                                old_value=e.ca_inn,
+                                new_value=i["ИНН"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_inn = i["ИНН"]))
+                        session.commit()
 
-                if e.ca_kpp != i["КПП"]:
-                    log_global(
-                            section_type="1С_client",
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.ca_id,
-                            field='ca_kpp',
-                            old_value=e.ca_kpp,
-                            new_value=i["КПП"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_kpp = i["КПП"]))
-                    session.commit()
+                    if e.ca_kpp != i["КПП"]:
+                        log_global(
+                                section_type="1С_client",
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.ca_id,
+                                field='ca_kpp',
+                                old_value=e.ca_kpp,
+                                new_value=i["КПП"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_kpp = i["КПП"]))
+                        session.commit()
 
-                if e.ca_field_of_activity != i["НаправлениеБизнеса"]:
-                    log_global(
-                            section_type="1С_client",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.ca_id,
-                            field='ca_field_of_activity',
-                            old_value=e.ca_field_of_activity,
-                            new_value=i["НаправлениеБизнеса"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_field_of_activity = i["НаправлениеБизнеса"]))
-                    session.commit()
+                    if e.ca_field_of_activity != i["НаправлениеБизнеса"]:
+                        log_global(
+                                section_type="1С_client",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.ca_id,
+                                field='ca_field_of_activity',
+                                old_value=e.ca_field_of_activity,
+                                new_value=i["НаправлениеБизнеса"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_field_of_activity = i["НаправлениеБизнеса"]))
+                        session.commit()
 
-                if e.key_manager != i["ОсновнойМенеджер"]:
-                    log_global(
-                            section_type="1С_client", 
-                            action="update",
-                            sys_id=0, 
-                            edit_id=e.ca_id, 
-                            field='key_manager',
-                            old_value=e.key_manager,
-                            new_value=i["ОсновнойМенеджер"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(key_manager = i["ОсновнойМенеджер"]))
-                    session.commit()
+                    if e.key_manager != i["ОсновнойМенеджер"]:
+                        log_global(
+                                section_type="1С_client", 
+                                action="update",
+                                sys_id=0, 
+                                edit_id=e.ca_id, 
+                                field='key_manager',
+                                old_value=e.key_manager,
+                                new_value=i["ОсновнойМенеджер"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(key_manager = i["ОсновнойМенеджер"]))
+                        session.commit()
 
-                if e.actual_address != i["ФактическийАдрес1"]:
-                    log_global(
-                            section_type="1С_client",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.ca_id,
-                            field='actual_address',
-                            old_value=e.actual_address,
-                            new_value=i["ФактическийАдрес1"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(actual_address = i["ФактическийАдрес1"]))
-                    session.commit()
+                    if e.actual_address != i["ФактическийАдрес1"]:
+                        log_global(
+                                section_type="1С_client",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.ca_id,
+                                field='actual_address',
+                                old_value=e.actual_address,
+                                new_value=i["ФактическийАдрес1"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(actual_address = i["ФактическийАдрес1"]))
+                        session.commit()
 
-                if e.registered_office != i["ЮридическийАдрес1"]:
-                    log_global(
-                            section_type="1С_client",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.ca_id,
-                            field='registered_office',
-                            old_value=e.registered_office,
-                            new_value=i["ЮридическийАдрес1"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(registered_office = i["ЮридическийАдрес1"]))
-                    session.commit()
+                    if e.registered_office != i["ЮридическийАдрес1"]:
+                        log_global(
+                                section_type="1С_client",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.ca_id,
+                                field='registered_office',
+                                old_value=e.registered_office,
+                                new_value=i["ЮридическийАдрес1"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(registered_office = i["ЮридическийАдрес1"]))
+                        session.commit()
 
-                if e.unique_onec_id != i["УникальныйИдентификаторПартнера"]:
-                    log_global(
-                            section_type="1C_client",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.ca_id,
-                            field='unique_onec_id',
-                            old_value=e.unique_onec_id,
-                            new_value=i["УникальныйИдентификаторПартнера"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(unique_onec_id = i["УникальныйИдентификаторПартнера"]))
-                    session.commit()
+                    if e.unique_onec_id != i["УникальныйИдентификаторПартнера"]:
+                        log_global(
+                                section_type="1C_client",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.ca_id,
+                                field='unique_onec_id',
+                                old_value=e.unique_onec_id,
+                                new_value=i["УникальныйИдентификаторПартнера"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(unique_onec_id = i["УникальныйИдентификаторПартнера"]))
+                        session.commit()
 
-                if e.ca_name_contragent != i["НаименованиеКонтрагент"]:
-                    log_global(
-                            section_type="1C_client", 
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.ca_id,
-                            field='ca_name_contragent', 
-                            old_value=e.ca_name_contragent,
-                            new_value=i["НаименованиеКонтрагент"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(ca_name_contragent = i["НаименованиеКонтрагент"]))
-                    session.commit()
+                    if e.ca_name_contragent != i["НаименованиеКонтрагент"]:
+                        log_global(
+                                section_type="1C_client", 
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.ca_id,
+                                field='ca_name_contragent', 
+                                old_value=e.ca_name_contragent,
+                                new_value=i["НаименованиеКонтрагент"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(ca_name_contragent = i["НаименованиеКонтрагент"]))
+                        session.commit()
 
+                    if e.service_manager != i["СервисныйМенеджер"]:
+                        log_global(
+                                section_type="1C_client", 
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.ca_id,
+                                field='service_manager', 
+                                old_value=e.service_manager,
+                                new_value=i["СервисныйМенеджер"])
+                        session.execute(
+                                update(models.Contragent)
+                                .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
+                                .values(service_manager = i["СервисныйМенеджер"]))
+                        session.commit()
 
-
-                if e.service_manager != i["СервисныйМенеджер"]:
-                    log_global(
-                            section_type="1C_client", 
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.ca_id,
-                            field='service_manager', 
-                            old_value=e.service_manager,
-                            new_value=i["СервисныйМенеджер"])
-                    session.execute(
-                            update(models.Contragent)
-                            .where(models.Contragent.ca_uid_contragent == i["УникальныйИдентификаторКонтрагента"])
-                            .values(service_manager = i["СервисныйМенеджер"]))
-                    session.commit()
-        
-        session.close()
+        except Exception as ex:
+            session.rollback()  # Откат транзакции в случае ошибки
+            logger.error(f"Ошибка при Обновлении клиентов по БД: {ex}")
+        finally:
+            session.close()  # Закрытие сессии после завершения работы
 
 
 def get_db_contragents(str_name):
     session = Database().session
-    result = session.query(models.Contragent).filter(models.Contragent.ca_name == str_name).first()
-    session.close()
-    if result:
-        return result.ca_id
-    else:
-        return None
-
+    try:
+        result = session.query(models.Contragent).filter(models.Contragent.ca_name == str_name).first()
+        if result:
+            return result.ca_id
+        else:
+            return None
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Отдачи клиентов из БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 #####################################
 # КОНТРАКТЫ
@@ -745,279 +817,294 @@ def add_all_contracts_oneC(clients):
     Добавляет Контракты в БД MySQL из 1С 
     """
     session = Database().session
-    for i in clients:
-        client = models.OnecContract(
-            name_contract = i["НаименованиеДоговора"],
-            contract_number = i["НомерДоговора"],
-            contract_date = i["ДатаДоговора"].split("T")[0],
-            сontract_status = i["Статус"],
-            organization = i["Организация"].replace('\xa0', ' '),
-            partner = i["Партнер"].replace('\xa0', ' '),
-            counterparty = i["Контрагент"].replace('\xa0', ' '),
-            contract_commencement_date = i["ДатаНачалаДействия"].split("T")[0],
-            contract_expiration_date = i["ДатаОкончанияДействия"].split("T")[0],
-            contract_purpose = i["Цель"],
-            type_calculations = i["ВидРасчетов"],
-            category = i["Категория"],
-            manager = i["Менеджер"],
-            subdivision = i["Подразделение"],
-            contact_person = i["КонтактноеЛицо"],
-            organization_bank_account = i["БанковскийСчетОрганизации"],
-            counterparty_bank_account = i["БанковскийСчетКонтрагента"],
-            detailed_calculations = i["ДетализацияРасчетов"],
-            unique_partner_identifier = i["УникальныйИдентификаторПартнера"],
-            unique_counterparty_identifier = i["УникальныйИдентификаторКонтрагента"]
-        )
-        session.add(client)
-        session.commit()
-    session.close()
-
+    try:
+        for i in clients:
+            client = models.OnecContract(
+                name_contract = i["НаименованиеДоговора"],
+                contract_number = i["НомерДоговора"],
+                contract_date = i["ДатаДоговора"].split("T")[0],
+                contract_status = i["Статус"],
+                organization = i["Организация"].replace('\xa0', ' '),
+                partner = i["Партнер"].replace('\xa0', ' '),
+                counterparty = i["Контрагент"].replace('\xa0', ' '),
+                contract_commencement_date = i["ДатаНачалаДействия"].split("T")[0],
+                contract_expiration_date = i["ДатаОкончанияДействия"].split("T")[0],
+                contract_purpose = i["Цель"],
+                type_calculations = i["ВидРасчетов"],
+                category = i["Категория"],
+                manager = i["Менеджер"],
+                subdivision = i["Подразделение"],
+                contact_person = i["КонтактноеЛицо"],
+                organization_bank_account = i["БанковскийСчетОрганизации"],
+                counterparty_bank_account = i["БанковскийСчетКонтрагента"],
+                detailed_calculations = i["ДетализацияРасчетов"],
+                unique_partner_identifier = i["УникальныйИдентификаторПартнера"],
+                unique_counterparty_identifier = i["УникальныйИдентификаторКонтрагента"]
+            )
+            session.add(client)
+            session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Создании контрактов в БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 def add_one_oneC_contracts(contracts):
     """ 
     Запись в БД_2 договоров полученных из 1С
     """
     session = Database().session
-    contract_in_db = session.query(models.OnecContract.unique_counterparty_identifier).filter(models.OnecContract.unique_counterparty_identifier != None).all()
-    all_id_from_db = set()
-    for i in contract_in_db:
-        all_id_from_db.add(i[0])
-    for item in contracts:
-        if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
-            one_contract = models.OnecContract(
-                name_contract = item["НаименованиеДоговора"],
-                contract_number = item["НомерДоговора"],
-                contract_date = item["ДатаДоговора"].split("T")[0],
-                сontract_status = item["Статус"],
-                organization = item["Организация"].replace('\xa0', ' '),
-                partner = item["Партнер"].replace('\xa0', ' '),
-                counterparty = item["Контрагент"].replace('\xa0', ' '),
-                contract_commencement_date = item["ДатаНачалаДействия"].split("T")[0],
-                contract_expiration_date = item["ДатаОкончанияДействия"].split("T")[0],
-                contract_purpose = item["Цель"],
-                type_calculations = item["ВидРасчетов"],
-                category = item["Категория"],
-                manager = item["Менеджер"],
-                subdivision = item["Подразделение"],
-                contact_person = item["КонтактноеЛицо"],
-                organization_bank_account = item["БанковскийСчетОрганизации"],
-                counterparty_bank_account = item["БанковскийСчетКонтрагента"],
-                detailed_calculations = item["ДетализацияРасчетов"],
-                unique_partner_identifier = item["УникальныйИдентификаторПартнера"],
-                unique_counterparty_identifier = item["УникальныйИдентификаторКонтрагента"]
-            )
-            session.add(one_contract)
-            session.commit()
-            session.close()
-            
-            log_global(
-                section_type="1С_contract",
-                edit_id=session.query(models.OnecContract.contract_id, models.OnecContract.unique_counterparty_identifier).filter(models.Contragent.unique_counterparty_identifier == item["УникальныйИдентификаторКонтрагента"]).first()[0],
-                field="name_contract",
-                old_value="0",
-                new_value=item["НаименованиеДоговора"].replace('\xa0', ' '),
-                action="add",
-                sys_id=0,
-            )
-            session.commit()
-            session.close()
+    try:
+        contract_in_db = session.query(models.OnecContract.unique_counterparty_identifier).filter(models.OnecContract.unique_counterparty_identifier != None).all()
+        all_id_from_db = set()
+        for i in contract_in_db:
+            all_id_from_db.add(i[0])
+        for item in contracts:
+            if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
+                one_contract = models.OnecContract(
+                    name_contract = item["НаименованиеДоговора"],
+                    contract_number = item["НомерДоговора"],
+                    contract_date = item["ДатаДоговора"].split("T")[0],
+                    contract_status = item["Статус"],
+                    organization = item["Организация"].replace('\xa0', ' '),
+                    partner = item["Партнер"].replace('\xa0', ' '),
+                    counterparty = item["Контрагент"].replace('\xa0', ' '),
+                    contract_commencement_date = item["ДатаНачалаДействия"].split("T")[0],
+                    contract_expiration_date = item["ДатаОкончанияДействия"].split("T")[0],
+                    contract_purpose = item["Цель"],
+                    type_calculations = item["ВидРасчетов"],
+                    category = item["Категория"],
+                    manager = item["Менеджер"],
+                    subdivision = item["Подразделение"],
+                    contact_person = item["КонтактноеЛицо"],
+                    organization_bank_account = item["БанковскийСчетОрганизации"],
+                    counterparty_bank_account = item["БанковскийСчетКонтрагента"],
+                    detailed_calculations = item["ДетализацияРасчетов"],
+                    unique_partner_identifier = item["УникальныйИдентификаторПартнера"],
+                    unique_counterparty_identifier = item["УникальныйИдентификаторКонтрагента"]
+                )
+                session.add(one_contract)
+                session.commit()
+                
+                log_global(
+                    section_type="1С_contract",
+                    edit_id=session.query(models.OnecContract.contract_id, models.OnecContract.unique_counterparty_identifier).filter(models.OnecContract.unique_counterparty_identifier == item["УникальныйИдентификаторКонтрагента"]).first()[0],
+                    field="name_contract",
+                    old_value="0",
+                    new_value=item["НаименованиеДоговора"].replace('\xa0', ' '),
+                    action="add",
+                    sys_id=0,
+                )
+                session.commit()
 
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Создании контракта по одному в БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
 
 def update_one_oneC_contracts(contracts):
     
     for i in contracts:
         session = Database().session
-        contracts_in_db = session.query(models.OnecContract)
-        for e in contracts_in_db:
-            if i["УникальныйИдентификаторКонтрагента"] == e.unique_counterparty_identifier:
-                # name_contract = item["НаименованиеДоговора"]
+        try:
+            contracts_in_db = session.query(models.OnecContract)
+            for e in contracts_in_db:
+                if i["УникальныйИдентификаторКонтрагента"] == e.unique_counterparty_identifier:
+                    # name_contract = item["НаименованиеДоговора"]
 
-                if str(e.name_contract).replace('\xa0', ' ') != i["НаименованиеДоговора"].replace('\xa0', ' '):
-                    log_global(section_type="1С_contract",
-                               edit_id=e.contract_id, 
-                               field='name_contract', 
-                               old_value=e.name_contract, 
-                               new_value=i["НаименованиеДоговора"].replace('\xa0', ' '),
-                               action="update", 
-                               sys_id=0) 
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(name_contract = i["НаименованиеДоговора"].replace('\xa0', ' ')))
-                    session.commit()
+                    if str(e.name_contract).replace('\xa0', ' ') != i["НаименованиеДоговора"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contract",
+                                   edit_id=e.contract_id, 
+                                   field='name_contract', 
+                                   old_value=e.name_contract, 
+                                   new_value=i["НаименованиеДоговора"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(name_contract = i["НаименованиеДоговора"].replace('\xa0', ' ')))
+                        session.commit()
 
-                # contract_number = item["НомерДоговора"]
-                if str(e.contract_number).replace('\xa0', ' ') != i["НомерДоговора"].replace('\xa0', ' '):
-                    log_global(section_type="1С_contract",
-                               action="update", 
-                               sys_id=0, 
-                               edit_id=e.contract_id, 
-                               field='contract_number', 
-                               old_value=e.contract_number, 
-                               new_value=i["НомерДоговора"].replace('\xa0', ' '))
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(contract_number = i["НомерДоговора"].replace('\xa0', ' ')))
-                    session.commit()
+                    # contract_number = item["НомерДоговора"]
+                    if str(e.contract_number).replace('\xa0', ' ') != i["НомерДоговора"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contract",
+                                   action="update", 
+                                   sys_id=0, 
+                                   edit_id=e.contract_id, 
+                                   field='contract_number', 
+                                   old_value=e.contract_number, 
+                                   new_value=i["НомерДоговора"].replace('\xa0', ' '))
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(contract_number = i["НомерДоговора"].replace('\xa0', ' ')))
+                        session.commit()
 
-                # contract_date = item["ДатаДоговора"].split("T")[0]
-                if str(e.contract_date).split("T")[0] != i["ДатаДоговора"].replace('\xa0', ' '):
-                    log_global(
-                            section_type="1С_contract", 
-                            action="update", 
-                            sys_id=0,
-                            edit_id=e.contract_id, 
-                            field='contract_date', 
-                            old_value=e.contract_date,
-                            new_value=i["ДатаДоговора"].split("T")[0])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(contract_date = i["ДатаДоговора"].split("T")[0]))
-                    session.commit()
+                    # contract_date = item["ДатаДоговора"].split("T")[0]
+                    if str(e.contract_date).split("T")[0] != str(i["ДатаДоговора"]).split("T")[0]:
+                        log_global(
+                                section_type="1С_contract", 
+                                action="update", 
+                                sys_id=0,
+                                edit_id=e.contract_id, 
+                                field='contract_date', 
+                                old_value=e.contract_date,
+                                new_value=str(i["ДатаДоговора"]).split("T")[0])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(contract_date = str(i["ДатаДоговора"]).split("T")[0]))
+                        session.commit()
 
-                # сontract_status = item["Статус"]
-                if e.сontract_status != i["Статус"]:
-                    log_global(
-                            section_type="1С_contract",
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.contract_id,
-                            field='сontract_status',
-                            old_value=e.сontract_status,
-                            new_value=i["Статус"])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(сontract_status = i["Статус"]))
-                    session.commit()
+                    # contract_status = item["Статус"]
+                    if e.contract_status != i["Статус"]:
+                        log_global(
+                                section_type="1С_contract",
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.contract_id,
+                                field='contract_status',
+                                old_value=e.contract_status,
+                                new_value=i["Статус"])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(contract_status = i["Статус"]))
+                        session.commit()
 
-                # organization = item["Организация"].replace('\xa0', ' ')
-                if e.organization.replace('\xa0', ' ') != i["Организация"].replace('\xa0', ' '):
-                    log_global(
-                            section_type="1С_contract",
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.contract_id,
-                            field='organization',
-                            old_value=e.organization.replace('\xa0', ' '),
-                            new_value=i["Организация"].replace('\xa0', ' '))
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(organization = i["Организация"].replace('\xa0', ' ')))
-                    session.commit()
+                    # organization = item["Организация"].replace('\xa0', ' ')
+                    if e.organization.replace('\xa0', ' ') != i["Организация"].replace('\xa0', ' '):
+                        log_global(
+                                section_type="1С_contract",
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.contract_id,
+                                field='organization',
+                                old_value=e.organization.replace('\xa0', ' '),
+                                new_value=i["Организация"].replace('\xa0', ' '))
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(organization = i["Организация"].replace('\xa0', ' ')))
+                        session.commit()
 
-                # partner = item["Партнер"].replace('\xa0', ' ')
-                if e.partner.replace('\xa0', ' ') != i["Партнер"].replace('\xa0', ' '):
-                    log_global(
-                            section_type="1С_contract",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.contract_id,
-                            field='partner',
-                            old_value=e.partner.replace('\xa0', ' '),
-                            new_value=i["Партнер"])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(partner = i["Партнер"].replace('\xa0', ' ')))
-                    session.commit()
+                    # partner = item["Партнер"].replace('\xa0', ' ')
+                    if e.partner.replace('\xa0', ' ') != i["Партнер"].replace('\xa0', ' '):
+                        log_global(
+                                section_type="1С_contract",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.contract_id,
+                                field='partner',
+                                old_value=e.partner.replace('\xa0', ' '),
+                                new_value=i["Партнер"])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(partner = i["Партнер"].replace('\xa0', ' ')))
+                        session.commit()
 
-                # counterparty = item["Контрагент"].replace('\xa0', ' ')
-                if e.counterparty.replace('\xa0', ' ') != i["Контрагент"].replace('\xa0', ' '):
-                    log_global(
-                            section_type="1С_contract", 
-                            action="update",
-                            sys_id=0, 
-                            edit_id=e.contract_id, 
-                            field='counterparty',
-                            old_value=e.counterparty,
-                            new_value=i["Контрагент"].replace('\xa0', ' '))
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(counterparty = i["Контрагент"].replace('\xa0', ' ')))
-                    session.commit()
+                    # counterparty = item["Контрагент"].replace('\xa0', ' ')
+                    if e.counterparty.replace('\xa0', ' ') != i["Контрагент"].replace('\xa0', ' '):
+                        log_global(
+                                section_type="1С_contract", 
+                                action="update",
+                                sys_id=0, 
+                                edit_id=e.contract_id, 
+                                field='counterparty',
+                                old_value=e.counterparty,
+                                new_value=i["Контрагент"].replace('\xa0', ' '))
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(counterparty = i["Контрагент"].replace('\xa0', ' ')))
+                        session.commit()
 
-                # contract_commencement_date = item["ДатаНачалаДействия"].split("T")[0]
-                if e.contract_commencement_date.split("T")[0] != i["ДатаНачалаДействия"].split("T")[0]:
-                    log_global(
-                            section_type="1С_contract",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.contract_id,
-                            field='contract_commencement_date',
-                            old_value=e.contract_commencement_date,
-                            new_value=i["ДатаНачалаДействия"].split("T")[0])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(contract_commencement_date = i["ДатаНачалаДействия"].split("T")[0]))
-                    session.commit()
+                    # contract_commencement_date = item["ДатаНачалаДействия"].split("T")[0]
+                    if str(e.contract_commencement_date).split("T")[0] != str(i["ДатаНачалаДействия"]).split("T")[0]:
+                        log_global(
+                                section_type="1С_contract",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.contract_id,
+                                field='contract_commencement_date',
+                                old_value=e.contract_commencement_date,
+                                new_value=str(i["ДатаНачалаДействия"]).split("T")[0])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(contract_commencement_date = str(i["ДатаНачалаДействия"]).split("T")[0]))
+                        session.commit()
 
-                # contract_expiration_date = item["ДатаОкончанияДействия"].split("T")[0]
-                if e.contract_expiration_date.split("T")[0] != i["ДатаОкончанияДействия"].split("T")[0]:
-                    log_global(
-                            section_type="1С_contract",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.contract_id,
-                            field='contract_expiration_date',
-                            old_value=e.contract_expiration_date,
-                            new_value=i["ДатаОкончанияДействия"].split("T")[0])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(contract_expiration_date = i["ДатаОкончанияДействия"].split("T")[0]))
-                    session.commit()
+                    # contract_expiration_date = item["ДатаОкончанияДействия"].split("T")[0]
+                    if str(e.contract_expiration_date).split("T")[0] != str(i["ДатаОкончанияДействия"]).split("T")[0]:
+                        log_global(
+                                section_type="1С_contract",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.contract_id,
+                                field='contract_expiration_date',
+                                old_value=e.contract_expiration_date,
+                                new_value=str(i["ДатаОкончанияДействия"]).split("T")[0])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(contract_expiration_date = str(i["ДатаОкончанияДействия"]).split("T")[0]))
+                        session.commit()
 
-                # contract_purpose = item["Цель"]
-                if e.contract_purpose != i["Цель"]:
-                    log_global(
-                            section_type="1C_contract",
-                            action="update",
-                            sys_id=0,
-                            edit_id=e.contract_id,
-                            field='contract_purpose',
-                            old_value=e.contract_purpose,
-                            new_value=i["Цель"])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(contract_purpose = i["Цель"]))
-                    session.commit()
+                    # contract_purpose = item["Цель"]
+                    if e.contract_purpose != i["Цель"]:
+                        log_global(
+                                section_type="1C_contract",
+                                action="update",
+                                sys_id=0,
+                                edit_id=e.contract_id,
+                                field='contract_purpose',
+                                old_value=e.contract_purpose,
+                                new_value=i["Цель"])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(contract_purpose = i["Цель"]))
+                        session.commit()
 
-                # type_calculations = item["ВидРасчетов"]
-                if e.type_calculations != i["ВидРасчетов"]:
-                    log_global(
-                            section_type="1C_contract", 
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.contract_id,
-                            field='type_calculations', 
-                            old_value=e.type_calculations,
-                            new_value=i["ВидРасчетов"])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(type_calculations = i["ВидРасчетов"]))
-                    session.commit()
+                    # type_calculations = item["ВидРасчетов"]
+                    if e.type_calculations != i["ВидРасчетов"]:
+                        log_global(
+                                section_type="1C_contract", 
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.contract_id,
+                                field='type_calculations', 
+                                old_value=e.type_calculations,
+                                new_value=i["ВидРасчетов"])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(type_calculations = i["ВидРасчетов"]))
+                        session.commit()
 
-                # category = item["Категория"]
-                if e.category != i["Категория"]:
-                    log_global(
-                            section_type="1C_contract", 
-                            action="update", 
-                            sys_id=0, 
-                            edit_id=e.contract_id,
-                            field='contract_id', 
-                            old_value=e.contract_id,
-                            new_value=i["Категория"])
-                    session.execute(
-                            update(models.OnecContract)
-                            .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
-                            .values(category = i["Категория"]))
-                    session.commit()
-        session.close()
+                    # category = item["Категория"]
+                    if e.category != i["Категория"]:
+                        log_global(
+                                section_type="1C_contract", 
+                                action="update", 
+                                sys_id=0, 
+                                edit_id=e.contract_id,
+                                field='category', 
+                                old_value=e.category,
+                                new_value=i["Категория"])
+                        session.execute(
+                                update(models.OnecContract)
+                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .values(category = i["Категория"]))
+                        session.commit()
+
+        except Exception as ex:
+            session.rollback()  # Откат транзакции в случае ошибки
+            logger.error(f"Ошибка при обновлении контрактов: {ex}")
+        
+        finally:
+            session.close()  # Закрытие сессии после завершения работы

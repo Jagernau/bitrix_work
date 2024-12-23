@@ -325,8 +325,3 @@ def get_onec_contracts():
     contracts = sun.get_clients()["Договоры"]
     return contracts
 
-contracts = get_onec_contracts()
-with open("contracts.json", "w") as file:
-    json.dump(contracts, file, indent=3, ensure_ascii=False)
-print(len(contracts))
-

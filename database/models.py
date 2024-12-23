@@ -209,7 +209,7 @@ class OnecContract(Base):
     name_contract = Column(String(100, 'utf8mb3_unicode_ci'), comment='НаименованиеДоговора')
     contract_number = Column(String(100, 'utf8mb3_unicode_ci'), comment='НомерДоговора')
     contract_date = Column(Date, comment='ДатаДоговора')
-    сontract_status = Column(String(50, 'utf8mb3_unicode_ci'), comment='Статус')
+    contract_status = Column(String(50, 'utf8mb3_unicode_ci'), comment='Статус')
     organization = Column(String(200, 'utf8mb3_unicode_ci'), comment='Организация')
     partner = Column(VARCHAR(1000), comment='Партнер')
     counterparty = Column(String(1000, 'utf8mb3_unicode_ci'), comment='Контрагент')
