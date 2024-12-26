@@ -325,3 +325,11 @@ def get_onec_contracts():
     contracts = sun.get_clients()["Договоры"]
     return contracts
 
+# def save_json_contracts():
+#     "Сохраняет json контрактов"
+#     sun = OneC(token=str(config.ONE_C_TOKEN), url=str(config.ONEC_CONTRACT_URL))
+#     contracts = sun.get_clients()
+#     with open('contracts_26_12_2024.json', 'w', encoding="utf-8") as f:
+#         json.dump(contracts, f, ensure_ascii=False, indent=2)
+
+    

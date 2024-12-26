@@ -226,6 +226,7 @@ class OnecContract(Base):
     detailed_calculations = Column(String(200, 'utf8mb3_unicode_ci'), comment='ДетализацияРасчетов')
     unique_partner_identifier = Column(String(500, 'utf8mb3_unicode_ci'), comment='УникальныйИдентификаторПартнера')
     unique_counterparty_identifier = Column(String(500, 'utf8mb3_unicode_ci'), comment='УникальныйИдентификаторКонтрагента')
+    unique_contract_identifier = Column(String(500, 'utf8mb3_unicode_ci'), comment='УникальныйИдентификаторДоговораКонтрагента')
 
 
 class SensorVendor(Base):

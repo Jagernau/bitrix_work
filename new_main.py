@@ -23,7 +23,7 @@ from database.crud import (
 # Настройка логгера
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler('thread_log.txt')
+file_handler = logging.FileHandler('25_thread_log.txt')
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(threadName)s] - %(message)s')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -48,15 +48,15 @@ def monitor_system(fetch_data_func, system_name):
             add_one_object(data)
             logger.info(f"Объекты {system_name} добавлены")
 
-            logger.info(f"Начало удаления объектов {system_name}")
-            delete_one_object(data)
-            logger.info(f"Объекты {system_name} удалены")
-
-            logger.info(f"Начало обновления объектов {system_name}")
-            update_one_object(data)
-            logger.info(f"Объекты {system_name} обновлены")
-
-            logger.info(f"{system_name} успешно обновлен")
+            # logger.info(f"Начало удаления объектов {system_name}")
+            # delete_one_object(data)
+            # logger.info(f"Объекты {system_name} удалены")
+            #
+            # logger.info(f"Начало обновления объектов {system_name}")
+            # update_one_object(data)
+            # logger.info(f"Объекты {system_name} обновлены")
+            #
+            # logger.info(f"{system_name} успешно обновлен")
         except Exception as e:
             logger.error(f"Ошибка в системе {system_name}: {e}")
         time.sleep(5)  # Задержка перед следующим циклом
@@ -79,9 +79,9 @@ def onec_monitoring():
             add_one_oneC_clients(clients_oneC)
             logger.info("Клиенты 1С: данные добавлены")
 
-            logger.info("Клиенты 1С: обновление данных")
-            update_one_oneC_client(clients_oneC)
-            logger.info("Клиенты 1С: данные обновлены")
+            # logger.info("Клиенты 1С: обновление данных")
+            # update_one_oneC_client(clients_oneC)
+            # logger.info("Клиенты 1С: данные обновлены")
         except Exception as e:
             logger.error(f"Ошибка в системе 1С: {e}")
         time.sleep(5)  # Задержка перед следующим циклом

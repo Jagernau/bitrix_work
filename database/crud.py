@@ -839,7 +839,8 @@ def add_all_contracts_oneC(clients):
                 counterparty_bank_account = i["БанковскийСчетКонтрагента"],
                 detailed_calculations = i["ДетализацияРасчетов"],
                 unique_partner_identifier = i["УникальныйИдентификаторПартнера"],
-                unique_counterparty_identifier = i["УникальныйИдентификаторКонтрагента"]
+                unique_counterparty_identifier = i["УникальныйИдентификаторКонтрагента"],
+                unique_contract_identifier = i["УникальныйИдентификаторДоговораКонтрагента"]
             )
             session.add(client)
             session.commit()
@@ -855,12 +856,12 @@ def add_one_oneC_contracts(contracts):
     """
     session = Database().session
     try:
-        contract_in_db = session.query(models.OnecContract.unique_counterparty_identifier).filter(models.OnecContract.unique_counterparty_identifier != None).all()
+        contract_in_db = session.query(models.OnecContract.unique_contract_identifier).filter(models.OnecContract.unique_contract_identifier != None).all()
         all_id_from_db = set()
         for i in contract_in_db:
             all_id_from_db.add(i[0])
         for item in contracts:
-            if item["УникальныйИдентификаторКонтрагента"] not in all_id_from_db:
+            if item["УникальныйИдентификаторДоговораКонтрагента"] not in all_id_from_db:
                 one_contract = models.OnecContract(
                     name_contract = item["НаименованиеДоговора"],
                     contract_number = item["НомерДоговора"],
@@ -881,14 +882,15 @@ def add_one_oneC_contracts(contracts):
                     counterparty_bank_account = item["БанковскийСчетКонтрагента"],
                     detailed_calculations = item["ДетализацияРасчетов"],
                     unique_partner_identifier = item["УникальныйИдентификаторПартнера"],
-                    unique_counterparty_identifier = item["УникальныйИдентификаторКонтрагента"]
+                    unique_counterparty_identifier = item["УникальныйИдентификаторКонтрагента"],
+                    unique_contract_identifier = i["УникальныйИдентификаторДоговораКонтрагента"]
                 )
                 session.add(one_contract)
                 session.commit()
                 
                 log_global(
                     section_type="1С_contract",
-                    edit_id=session.query(models.OnecContract.contract_id, models.OnecContract.unique_counterparty_identifier).filter(models.OnecContract.unique_counterparty_identifier == item["УникальныйИдентификаторКонтрагента"]).first()[0],
+                    edit_id=session.query(models.OnecContract.contract_id, models.OnecContract.unique_contract_identifier).filter(models.OnecContract.unique_contract_identifier == item["УникальныйИдентификаторДоговораКонтрагента"]).first()[0],
                     field="name_contract",
                     old_value="0",
                     new_value=item["НаименованиеДоговора"].replace('\xa0', ' '),
@@ -910,7 +912,7 @@ def update_one_oneC_contracts(contracts):
         try:
             contracts_in_db = session.query(models.OnecContract)
             for e in contracts_in_db:
-                if i["УникальныйИдентификаторКонтрагента"] == e.unique_counterparty_identifier:
+                if i["УникальныйИдентификаторДоговораКонтрагента"] == e.unique_contract_identifier:
                     # name_contract = item["НаименованиеДоговора"]
 
                     if str(e.name_contract).replace('\xa0', ' ') != i["НаименованиеДоговора"].replace('\xa0', ' '):
@@ -923,7 +925,7 @@ def update_one_oneC_contracts(contracts):
                                    sys_id=0) 
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(name_contract = i["НаименованиеДоговора"].replace('\xa0', ' ')))
                         session.commit()
 
@@ -938,7 +940,7 @@ def update_one_oneC_contracts(contracts):
                                    new_value=i["НомерДоговора"].replace('\xa0', ' '))
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(contract_number = i["НомерДоговора"].replace('\xa0', ' ')))
                         session.commit()
 
@@ -954,7 +956,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=str(i["ДатаДоговора"]).split("T")[0])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(contract_date = str(i["ДатаДоговора"]).split("T")[0]))
                         session.commit()
 
@@ -970,7 +972,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["Статус"])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(contract_status = i["Статус"]))
                         session.commit()
 
@@ -986,7 +988,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["Организация"].replace('\xa0', ' '))
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(organization = i["Организация"].replace('\xa0', ' ')))
                         session.commit()
 
@@ -1002,7 +1004,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["Партнер"])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(partner = i["Партнер"].replace('\xa0', ' ')))
                         session.commit()
 
@@ -1018,7 +1020,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["Контрагент"].replace('\xa0', ' '))
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(counterparty = i["Контрагент"].replace('\xa0', ' ')))
                         session.commit()
 
@@ -1034,7 +1036,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=str(i["ДатаНачалаДействия"]).split("T")[0])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(contract_commencement_date = str(i["ДатаНачалаДействия"]).split("T")[0]))
                         session.commit()
 
@@ -1050,7 +1052,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=str(i["ДатаОкончанияДействия"]).split("T")[0])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(contract_expiration_date = str(i["ДатаОкончанияДействия"]).split("T")[0]))
                         session.commit()
 
@@ -1066,7 +1068,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["Цель"])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(contract_purpose = i["Цель"]))
                         session.commit()
 
@@ -1082,7 +1084,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["ВидРасчетов"])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(type_calculations = i["ВидРасчетов"]))
                         session.commit()
 
@@ -1098,7 +1100,7 @@ def update_one_oneC_contracts(contracts):
                                 new_value=i["Категория"])
                         session.execute(
                                 update(models.OnecContract)
-                                .where(models.OnecContract.unique_counterparty_identifier == i["УникальныйИдентификаторКонтрагента"])
+                                .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(category = i["Категория"]))
                         session.commit()
 

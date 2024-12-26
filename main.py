@@ -221,7 +221,6 @@ def job():
             contracts_oneC = get_onec_contracts()
             logger.info("Договоры 1С конец получения")
 
-            #add_all_contracts_oneC(contracts_oneC)
             logger.info("Договоры 1С начал добавлять")
             add_one_oneC_contracts(contracts_oneC)
             logger.info("Договоры 1С окончил добавлять")
@@ -244,7 +243,7 @@ if __name__ == '__main__':
     # execution_time = end_time - start_time
     # print(f"Execution time: {execution_time} seconds")
 
-    schedule.every().day.at("19:40").do(job)
+    schedule.every().day.at("17:40").do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
