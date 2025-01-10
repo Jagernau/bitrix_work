@@ -6,7 +6,8 @@ from data_entry import (
         merge_scout_data,
         merge_era_data,
         get_onec_clients,
-        get_onec_contracts
+        get_onec_contracts,
+        get_onec_contacts
         )
 
 from database.crud import (
@@ -18,7 +19,10 @@ from database.crud import (
         update_one_oneC_client,
         add_all_contracts_oneC,
         add_one_oneC_contracts,
-        update_one_oneC_contracts
+        update_one_oneC_contracts,
+        add_all_contacts_oneC,
+        add_one_oneC_contacts,
+        update_one_oneC_contacts
         )
 
 import schedule
@@ -197,7 +201,6 @@ def job():
     if computer_name != "max-SWH":
 
         try:
-
             logger.info("Клиенты 1С начало получения")
             clients_oneC = get_onec_clients()
             logger.info("Клиенты 1С конец получения")
@@ -233,6 +236,25 @@ def job():
         except Exception as e:
             logger.error(f"В обновлении Договоры OneC возникла ошибка: {e}")
 
+
+        try:
+
+            logger.info("Контакты 1С начало получения")
+            contacts_oneC = get_onec_contacts()
+            logger.info("Контакты 1С конец получения")
+            
+            logger.info("Контакты 1С начал добавлять")
+            add_one_oneC_contacts(contacts_oneC)
+            logger.info("Контакты 1С окончил добавлять")
+
+            logger.info("Контакты 1С начали обновляться")
+            update_one_oneC_contacts(contacts_oneC)
+            logger.info("Контакты 1С закончили обновляться")
+
+            logger.info("Контакты OneC успешно обновлены")
+        except Exception as e:
+            logger.error(f"В обновлении Контактов OneC возникла ошибка: {e}")
+
 if __name__ == '__main__':
 
     # start_time = time.time()
@@ -243,7 +265,7 @@ if __name__ == '__main__':
     # execution_time = end_time - start_time
     # print(f"Execution time: {execution_time} seconds")
 
-    schedule.every().day.at("17:40").do(job)
+    schedule.every().day.at("21:40").do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)

@@ -783,15 +783,17 @@ class SunPostgres:
             return None
 
 class OneC:
-    def __init__(self, token: str, url: str):
-        self.token = token
+    def __init__(self, login: str, password: str, url: str):
+        self.login = login
+        self.password = password
         self.url = url
 
     def get_clients(self):
-        headers = {
-            'Authorization': f'Bearer {self.token}',
-            'Accept': 'application/json'
-        }
-        response = requests.get(self.url, headers=headers)
-        return response.json()
+        with requests.Session() as session:
+            session.auth = (self.login, self.password)
+            with session.get(self.url) as response:
+                if response.ok:
+                    return response.json()
+                else:
+                    raise Exception("Не идёт запрос") 
 

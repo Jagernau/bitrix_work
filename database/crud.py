@@ -165,8 +165,13 @@ def delete_one_object(marge_data: list):
     sys_id = marge_data[10]["monitor_sys_id"]
     session = Database().session
     try:
-        objects_in_db = session.query(models.CaObject.sys_mon_object_id, models.CaObject.sys_mon_id).filter(
+        objects_in_db = session.query(
+                models.CaObject.sys_mon_object_id, 
+                models.CaObject.sys_mon_id,
+                models.CaObject.object_status
+                ).filter(
             models.CaObject.sys_mon_id == sys_id,
+            models.CaObject.object_status != 9
         )
         all_id_from_db = set()
         for i in objects_in_db:
@@ -898,7 +903,6 @@ def add_one_oneC_contracts(contracts):
                     sys_id=0,
                 )
                 session.commit()
-
     except Exception as ex:
         session.rollback()  # Откат транзакции в случае ошибки
         logger.error(f"Ошибка при Создании контракта по одному в БД: {ex}")
@@ -1102,6 +1106,189 @@ def update_one_oneC_contracts(contracts):
                                 update(models.OnecContract)
                                 .where(models.OnecContract.unique_contract_identifier == i["УникальныйИдентификаторДоговораКонтрагента"])
                                 .values(category = i["Категория"]))
+                        session.commit()
+
+        except Exception as ex:
+            session.rollback()  # Откат транзакции в случае ошибки
+            logger.error(f"Ошибка при обновлении контрактов: {ex}")
+        
+        finally:
+            session.close()  # Закрытие сессии после завершения работы
+
+#####################################
+# КОНТАКТЫ
+#####################################
+
+def add_all_contacts_oneC(clients):
+    """
+    Добавляет Контакты в БД MySQL из 1С 
+    """
+    session = Database().session
+    try:
+        for i in clients:
+            contact = models.OnecContact(
+                surname = i['Фамилия'],
+                name = i['Имя'],
+                patronymic = i['Отчество'],
+                position = i['Должность'],
+                phone = i['Телефон'],
+                mobiletelephone = i['МобТелефон'],
+                email = i['ЭлПочта'],
+                unique_partner_identifier = i['УникальныйИдентификаторПартнера'],
+                unique_contact_identifier = i['УникальныйИдентификаторКонтактногоЛица']
+            )
+            session.add(contact)
+            session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Создании контактов в БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
+
+
+def add_one_oneC_contacts(contacts):
+    """ 
+    Запись в БД_2 контактов полученных из 1С
+    """
+    session = Database().session
+    try:
+        contact_in_db = session.query(models.OnecContact.unique_contact_identifier).filter(models.OnecContact.unique_contact_identifier != None).all()
+        all_id_from_db = set()
+        for i in contact_in_db:
+            all_id_from_db.add(i[0])
+        for item in contacts:
+            if item["УникальныйИдентификаторКонтактногоЛица"] not in all_id_from_db:
+                one_contact = models.OnecContact(
+                    surname = item['Фамилия'],
+                    name = item['Имя'],
+                    patronymic = item['Отчество'],
+                    position = item['Должность'],
+                    phone = item['Телефон'],
+                    mobiletelephone = item['МобТелефон'],
+                    email = item['ЭлПочта'],
+                    unique_partner_identifier = item['УникальныйИдентификаторПартнера'],
+                    unique_contact_identifier = item['УникальныйИдентификаторКонтактногоЛица']
+                )
+                session.add(one_contact)
+                session.commit()
+                
+                log_global(
+                    section_type="1С_contact",
+                    edit_id=session.query(models.OnecContact.contact_id, models.OnecContact.unique_contact_identifier).filter(models.OnecContact.unique_contact_identifier == item['УникальныйИдентификаторКонтактногоЛица']).first()[0],
+                    field="surname",
+                    old_value="0",
+                    new_value=item["surname"].replace('\xa0', ' '),
+                    action="add",
+                    sys_id=0,
+                )
+                session.commit()
+    except Exception as ex:
+        session.rollback()  # Откат транзакции в случае ошибки
+        logger.error(f"Ошибка при Создании контракта по одному в БД: {ex}")
+    finally:
+        session.close()  # Закрытие сессии после завершения работы
+
+
+def update_one_oneC_contacts(contacts):
+    "Обновление контактов по одному" 
+    for i in contacts:
+        session = Database().session
+        try:
+            contacts_in_db = session.query(models.OnecContact)
+            for e in contacts_in_db:
+                if i['УникальныйИдентификаторКонтактногоЛица'] == e.unique_contact_identifier:
+                    # surname = item['Фамилия']
+
+                    if str(e.surname).replace('\xa0', ' ') != i["Фамилия"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contact",
+                                   edit_id=e.contact_id, 
+                                   field='surname', 
+                                   old_value=e.surname, 
+                                   new_value=i["Фамилия"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContact)
+                                .where(models.OnecContact.unique_contact_identifier == i["УникальныйИдентификаторКонтактногоЛица"])
+                                .values(surname = i["Фамилия"].replace('\xa0', ' ')))
+                        session.commit()
+
+                    # name = item['Имя']
+                    if str(e.name).replace('\xa0', ' ') != i["Имя"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contact",
+                                   edit_id=e.contact_id, 
+                                   field='name', 
+                                   old_value=e.name, 
+                                   new_value=i["Имя"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContact)
+                                .where(models.OnecContact.unique_contact_identifier == i["УникальныйИдентификаторКонтактногоЛица"])
+                                .values(name = i["Имя"].replace('\xa0', ' ')))
+                        session.commit()
+
+                    # patronymic = item['Отчество']
+                    if str(e.patronymic).replace('\xa0', ' ') != i["Отчество"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contact",
+                                   edit_id=e.contact_id, 
+                                   field='patronymic', 
+                                   old_value=e.patronymic, 
+                                   new_value=i["Отчество"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContact)
+                                .where(models.OnecContact.unique_contact_identifier == i["УникальныйИдентификаторКонтактногоЛица"])
+                                .values(patronymic = i["Отчество"].replace('\xa0', ' ')))
+                        session.commit()
+
+
+                    # phone = item['Телефон']
+                    if str(e.phone).replace('\xa0', ' ') != i["Телефон"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contact",
+                                   edit_id=e.contact_id, 
+                                   field='phone', 
+                                   old_value=e.phone, 
+                                   new_value=i["Телефон"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContact)
+                                .where(models.OnecContact.unique_contact_identifier == i["УникальныйИдентификаторКонтактногоЛица"])
+                                .values(phone = i["Телефон"].replace('\xa0', ' ')))
+                        session.commit()
+
+
+                    # mobiletelephone = item['МобТелефон']
+                    if str(e.mobiletelephone).replace('\xa0', ' ') != i["МобТелефон"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contact",
+                                   edit_id=e.contact_id, 
+                                   field='mobiletelephone', 
+                                   old_value=e.mobiletelephone, 
+                                   new_value=i["МобТелефон"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContact)
+                                .where(models.OnecContact.unique_contact_identifier == i["УникальныйИдентификаторКонтактногоЛица"])
+                                .values(mobiletelephone = i["МобТелефон"].replace('\xa0', ' ')))
+                        session.commit()
+
+
+                    # email = item['ЭлПочта']
+                    if str(e.email).replace('\xa0', ' ') != i["ЭлПочта"].replace('\xa0', ' '):
+                        log_global(section_type="1С_contact",
+                                   edit_id=e.contact_id, 
+                                   field='email', 
+                                   old_value=e.email, 
+                                   new_value=i["ЭлПочта"].replace('\xa0', ' '),
+                                   action="update", 
+                                   sys_id=0) 
+                        session.execute(
+                                update(models.OnecContact)
+                                .where(models.OnecContact.unique_contact_identifier == i["УникальныйИдентификаторКонтактногоЛица"])
+                                .values(email = i["ЭлПочта"].replace('\xa0', ' ')))
                         session.commit()
 
         except Exception as ex:
