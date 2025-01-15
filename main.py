@@ -5,33 +5,17 @@ from data_entry import (
         merge_wialon_local_data, 
         merge_scout_data,
         merge_era_data,
-        get_onec_clients,
-        get_onec_contracts,
-        get_onec_contacts
         )
 
 from database.crud import (
         add_one_object,
-        add_one_oneC_contracts,
         delete_one_object,
         update_one_object,
-        add_one_oneC_clients,
-        update_one_oneC_client,
-        add_all_contracts_oneC,
-        add_one_oneC_contracts,
-        update_one_oneC_contracts,
-        add_all_contacts_oneC,
-        add_one_oneC_contacts,
-        update_one_oneC_contacts
         )
 
 import schedule
 import time
 import logging
-
-import socket
-
-computer_name = str(socket.gethostname())
 
 #Логгер
 
@@ -198,62 +182,6 @@ def job():
         logger.error(f"В обновлении Эра возникла ошибка: {e}")
 
 
-    if computer_name != "max-SWH":
-
-        try:
-            logger.info("Клиенты 1С начало получения")
-            clients_oneC = get_onec_clients()
-            logger.info("Клиенты 1С конец получения")
-
-            logger.info("Клиенты 1С начал добавлять")
-            add_one_oneC_clients(clients_oneC)
-            logger.info("Клиенты 1С окончил добавлять")
-
-            logger.info("Клиенты 1С начали обновляться")
-            update_one_oneC_client(clients_oneC)
-            logger.info("Клиенты 1С закончили обновляться")
-
-            logger.info("Клиенты OneC успешно обновлены")
-        except Exception as e:
-            logger.error(f"В обновлении клиентов OneC возникла ошибка: {e}")
-
-
-        try:
-
-            logger.info("Договоры 1С начало получения")
-            contracts_oneC = get_onec_contracts()
-            logger.info("Договоры 1С конец получения")
-
-            logger.info("Договоры 1С начал добавлять")
-            add_one_oneC_contracts(contracts_oneC)
-            logger.info("Договоры 1С окончил добавлять")
-
-            logger.info("Договоры 1С начали обновляться")
-            update_one_oneC_contracts(contracts_oneC)
-            logger.info("Договоры 1С закончили обновляться")
-
-            logger.info("Договоры OneC успешно обновлены")
-        except Exception as e:
-            logger.error(f"В обновлении Договоры OneC возникла ошибка: {e}")
-
-
-        try:
-
-            logger.info("Контакты 1С начало получения")
-            contacts_oneC = get_onec_contacts()
-            logger.info("Контакты 1С конец получения")
-            
-            logger.info("Контакты 1С начал добавлять")
-            add_one_oneC_contacts(contacts_oneC)
-            logger.info("Контакты 1С окончил добавлять")
-
-            logger.info("Контакты 1С начали обновляться")
-            update_one_oneC_contacts(contacts_oneC)
-            logger.info("Контакты 1С закончили обновляться")
-
-            logger.info("Контакты OneC успешно обновлены")
-        except Exception as e:
-            logger.error(f"В обновлении Контактов OneC возникла ошибка: {e}")
 
 if __name__ == '__main__':
 

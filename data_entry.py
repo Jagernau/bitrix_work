@@ -5,26 +5,14 @@ from parser.classes import (
         get_wialin_local_units_users, 
         Scout, 
         get_era_data,
-        SunPostgres,
-        create_wialon_host_user,
-        create_wialon_host_unit,
-        get_wialon_host_users,
-        create_wialon_local_user,
-        get_wialon_local_users,
-        create_wialon_local_unit,
-        OneC,
         )
 from configurations import config
 import time
-from datetime import datetime
 from utils.calculate import (
         get_status, 
         get_glonas_user, 
-        get_fort_user, 
         get_fort_company,
         get_fort_company_group,
-        get_wialon_imei, 
-        get_wialon_agent, 
         get_wialon_user, 
         generate_scout_user, 
         generate_era_company,
@@ -33,7 +21,6 @@ from utils.calculate import (
         get_fort_user_by_id,
 )
 from database.crud import get_db_users_from_sysem, get_db_contragents
-from utils.help_utils import get_time_slice
 
 import emoji
 import json
@@ -223,121 +210,3 @@ def merge_era_data():
         marge["parent_id"] = i.parentGroupId
         result.append(marge)
     return result
-
-# Glonasssoft
-def put_comand_to_glonasssoft(json_data):
-    """"
-    Добавить команду в систему мониторинга глонасс
-    :param json_data:
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    comand  = glonasssoft.put_terminal_comands(
-            token=token,
-            sourceid = str(config.SOURCE_GLONASS_ID),
-            destinationid = json_data["imei"],
-            taskdata = json_data["command"],
-            owner = str(config.GRAND_OWNER_GLONASS_ID),
-            )
-    return comand
-
-def get_comands_glonasssoft(json_data):
-    """"
-    Получить отчёт по командам глонасс
-    :param json_data:
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(2)
-    comand  = glonasssoft.get_terminal_comands(
-            token=token,
-            imei = json_data["imei"],
-            start = json_data["start"],
-            end = json_data["end"],
-            )
-    return comand
-
-def no_token_comand_put_get_glonasssoft(json_data):
-    """"
-    Объединить отчеты по командам глонасс
-    :param json_data:
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))
-    token = str(glonasssoft.token)
-    time.sleep(1)
-    glonasssoft.put_terminal_comands(
-            token=token,
-            sourceid = str(config.SOURCE_GLONASS_ID),
-            destinationid = json_data["imei"],
-            taskdata = json_data["command"],
-            owner = str(config.GRAND_OWNER_GLONASS_ID),
-    )
-    time.sleep(8)
-    time_slice = get_time_slice()
-    get_data = glonasssoft.get_terminal_comands(
-            token=token,
-            imei = json_data["imei"],
-            start = time_slice[0],
-            end = time_slice[1],
-    )
-    return get_data
-            
-
-
-def with_token_comand_put_get_glonasssoft(token_glonass, imei_glonas, command_glonass):
-    """"
-    Объединить отчеты по командам глонасс
-    :param json_data:
-    :return:
-    """
-    glonasssoft = Glonasssoft(str(config.GLONASS_LOGIN), str(config.GLONASS_PASSWORD))    
-    time.sleep(3)
-    glonasssoft.put_terminal_comands(
-            token=token_glonass,
-            sourceid = str(config.SOURCE_GLONASS_ID),
-            destinationid = imei_glonas,
-            taskdata = command_glonass,
-            owner = str(config.GRAND_OWNER_GLONASS_ID),
-    )
-    time.sleep(8)
-    time_slice = get_time_slice()
-    get_data = glonasssoft.get_terminal_comands(
-            token=token_glonass,
-            imei = imei_glonas,
-            start = time_slice[0],
-            end = time_slice[1],
-    )
-    return get_data
-
-def get_onec_clients():
-    "Отдаёт клиентов 1С"
-    sun = OneC(login=str(config.ONE_C_LOGIN), password=str(config.ONE_C_PASSWORD), url=str(config.ONEC_CLIENT_URL))
-    clients = sun.get_clients()["Клиенты"]
-    return clients
-
-def get_onec_contracts():
-    "Отдаёт контракты 1С"
-    sun = OneC(login=str(config.ONE_C_LOGIN), password=str(config.ONE_C_PASSWORD), url=str(config.ONEC_CONTRACT_URL))
-    contracts = sun.get_clients()["Договоры"]
-    return contracts
-
-
-def get_onec_contacts():
-    "Отдаёт контракты 1С"
-    sun = OneC(login=str(config.ONE_C_LOGIN), password=str(config.ONE_C_PASSWORD), url=str(config.ONEC_CONTACT_URL))
-    contracts = sun.get_clients()["КонтактныеЛица"]
-    return contracts
-
-# def save_json_contacts():
-#     "Сохраняет json контакты"
-#     sun = OneC(login=str(config.ONE_C_LOGIN), password=str(config.ONE_C_PASSWORD), url=str(config.ONEC_CONTACT_URL))
-#     contracts = sun.get_clients()
-#     with open('contacts_10_01_2025.json', 'w', encoding="utf-8") as f:
-#         json.dump(contracts, f, ensure_ascii=False, indent=2)
-#
-# save_json_contacts()
-    
