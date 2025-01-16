@@ -193,7 +193,7 @@ if __name__ == '__main__':
     # execution_time = end_time - start_time
     # print(f"Execution time: {execution_time} seconds")
 
-    schedule.every().day.at("21:40").do(job)
+    schedule.every().day.at("19:40").do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
